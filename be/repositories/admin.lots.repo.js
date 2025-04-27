@@ -1,6 +1,5 @@
 const { pool } = require('../config/db');
 
-// Parking Lots Management
 exports.getAllParkingLots = async () => {
     const query = `
         SELECT 
@@ -31,22 +30,24 @@ exports.createParkingLot = async (parkingLotData) => {
     const {
         lot_name,
         car_capacity,
-        bike_capacity,
+        bike_capacity
     } = parkingLotData;
 
     const query = `
         INSERT INTO ParkingLots (
             lot_name,
             car_capacity,
-            bike_capacity
-        ) VALUES ($1, $2, $3)
+            bike_capacity,
+            current_car,
+            current_bike
+        ) VALUES ($1, $2, $3, 0, 0)
         RETURNING *
     `;
     
     const result = await pool.query(query, [
         lot_name,
         car_capacity,
-        bike_capacity,
+        bike_capacity
     ]);
     return result.rows[0];
 };
