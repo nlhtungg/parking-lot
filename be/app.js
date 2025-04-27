@@ -10,6 +10,7 @@ dotenv.config();
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 
 // Initialize express app
@@ -41,6 +42,7 @@ app.use(session({
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Error handling middleware
