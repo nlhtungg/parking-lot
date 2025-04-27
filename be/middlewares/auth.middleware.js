@@ -18,5 +18,16 @@ function isAuthenticated(req, res, next) {
     };
   }
   
-  module.exports = { isAuthenticated, hasRole };
+  // Middleware to check if user is already logged in
+  function isNotAuthenticated(req, res, next) {
+    if (req.session.user) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "You are already logged in. Please logout first." 
+        });
+    }
+    next();
+  }
+  
+  module.exports = { isAuthenticated, hasRole, isNotAuthenticated };
   
