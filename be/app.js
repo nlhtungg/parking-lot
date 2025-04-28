@@ -36,7 +36,7 @@ app.use(session({
     cookie: {
         //secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 8 * 60 * 60 * 1000 + (7 * 60 * 60 * 1000) // 8 hours + (GMT+7)
     }
 }));
 

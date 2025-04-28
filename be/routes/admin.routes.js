@@ -20,6 +20,7 @@ const {
 } = require('../controllers/admin.lots.controller');
 
 const { isAuthenticated, hasRole } = require('../middlewares/auth.middleware');
+const { getAllMonthlySubs } = require('../controllers/admin.monthlysubs.controller');
 
 // Middleware for all admin routes
 router.use(isAuthenticated, hasRole('admin'));
@@ -41,5 +42,8 @@ router.get('/parking-lots/:id', getParkingLotById);
 router.post('/parking-lots', createParkingLot);
 router.put('/parking-lots/:id', updateParkingLot);
 router.delete('/parking-lots/:id', deleteParkingLot);
+
+// Monthly Subs Management
+router.get('/monthly-subs', getAllMonthlySubs);
 
 module.exports = router; 
