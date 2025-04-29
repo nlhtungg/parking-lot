@@ -9,7 +9,7 @@ exports.createMonthlyPayment = async (data) => {
     } = data;
 
     const query = `
-        INSERT INTO Payments (
+        INSERT INTO Payment (
             sub_id,
             payment_date,
             payment_method,
@@ -18,6 +18,11 @@ exports.createMonthlyPayment = async (data) => {
         RETURNING *
     `;
 
-    const result = await pool.query(query,data);
+    const result = await pool.query(query,[
+        sub_id,
+        payment_date,
+        payment_method,
+        total_amount
+    ]);
     return result.rows[0];
 }

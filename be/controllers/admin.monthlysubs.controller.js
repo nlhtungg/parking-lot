@@ -1,6 +1,7 @@
 const subsRepo = require('../repositories/admin.monthlysubs.repo');
 const paymentsRepo = require('../repositories/admin.payments.repo');
-const {getToday} = require('../utils/date');
+const feeRepo = require('../repositories/admin.feeConfig.repo');
+const {getToday, getDayAfterMonths} = require('../utils/date');
 
 exports.getAllMonthlySubs = async (req, res) => {
     try {
@@ -24,13 +25,13 @@ exports.createMonthlySub = async (req, res) => {
             license_plate,
             vehicle_type,
             start_date,
-            end_date,
+            months,
             owner_name,
             owner_phone 
         } = req.body;
 
         // Validate required fields
-        if (!license_plate || !vehicle_type || !start_date || !end_date || !owner_name || !owner_phone) {
+        if (!license_plate || !vehicle_type || !start_date || !months || !owner_name || !owner_phone) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
@@ -38,9 +39,11 @@ exports.createMonthlySub = async (req, res) => {
         }
 
         const today = getToday();
-        const exist = await subsRepo.checkExistingSub(license_plate,today);
+        const end_date = getDayAfterMonths(start_date, months);
+        const exist = await subsRepo.checkExistingSub(license_plate,start_date, end_date);
+        console.log('exist:', exist);
         if(exist > 0){
-            res.status().json({
+            return res.status(409).json({
                 success: false,
                 message: 'There is an existing sub with this license plate'
             })
@@ -54,11 +57,14 @@ exports.createMonthlySub = async (req, res) => {
             owner_name,
             owner_phone 
         });
+        
+        const monthlyFee = await feeRepo.getServiceFee('Monthly', vehicle_type);
 
         const subPayment = await paymentsRepo.createMonthlyPayment({
-            //newMonthlySub.sub_id,
+            sub_id: newMonthlySub.sub_id,
             payment_date : today,
-
+            payment_method: 'Cash',
+            total_amount: months * monthlyFee
         })
 
         res.status(201).json({
@@ -76,3 +82,27 @@ exports.createMonthlySub = async (req, res) => {
         });
     }
 };
+
+exports.deleteMonthlySub = async (req, res) => {
+    try {
+        const { id } = req.params;
+        //console.log('controller sub_id:', id);
+        const result = await subsRepo.deleteMonthlySub(id);
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Monthly subscription not found'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Monthly subscription deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete monthly sub error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
