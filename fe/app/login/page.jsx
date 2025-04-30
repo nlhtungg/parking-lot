@@ -20,11 +20,11 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await login(formData);
-            if (formData.role === "admin") {
+            const response = await login(formData);
+            if (response.user.role === "admin") {
                 router.push("/admin");
             } else {
-                router.push("/dashboard");
+                router.push("/employee");
             }
         } catch (err) {
             setError(err.message || "Invalid username or password");
