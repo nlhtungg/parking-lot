@@ -1,9 +1,9 @@
 const {pool} = require('../config/db')
 
 exports.getServiceFee = async (ticket_type, vehicle_type) => {
-    const query = `SELECT * FROM FeeConfigs WHERE ticket_type = $1 AND vehicle_type = $2`;
+    const query = `SELECT service_fee FROM FeeConfigs WHERE ticket_type = $1 AND vehicle_type = $2`;
     const result = await pool.query(query, [ticket_type, vehicle_type]);
-    return result.rows[0];
+    return result.rows[0].service_fee;
 }
 
 exports.getPenaltyFee = async (ticket_type, vehicle_type) => {
