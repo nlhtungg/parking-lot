@@ -10,7 +10,7 @@ const adminMonthlySubsController = require('../controllers/admin.monthlysubs.con
 const adminFeeConfigController = require('../controllers/admin.feeConfig.controller');
 
 // Middleware for all admin routes
-router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole('admin'));
+router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['admin']));
 
 // Dashboard
 router.get('/dashboard', adminController.getDashboard);
