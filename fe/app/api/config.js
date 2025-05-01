@@ -10,13 +10,23 @@ const api = axios.create({
     withCredentials: true, // Ensure cookies are sent with requests
 });
 
-// Add a response interceptor to handle 401 errors
+// Add a response interceptor to handle 401 errors and role-based access
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
             // Redirect to login page on unauthorized access
             window.location.href = "/login";
+        } else if (error.response?.status === 403) {
+            // Handle forbidden access based on roles
+            const currentPath = window.location.pathname;
+            if (currentPath.startsWith("/admin")) {
+                alert("Access denied: Admins only");
+                window.location.href = "/employee";
+            } else if (currentPath.startsWith("/employee")) {
+                alert("Access denied: Employees only");
+                window.location.href = "/admmin";
+            }
         }
         return Promise.reject(error);
     }
