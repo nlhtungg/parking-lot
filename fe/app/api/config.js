@@ -7,15 +7,15 @@ const api = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
-    withCredentials: true, // Important for session cookies
+    withCredentials: true, // Ensure cookies are sent with requests
 });
 
-// Add a response interceptor to handle errors
+// Add a response interceptor to handle 401 errors
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Handle unauthorized access
+            // Redirect to login page on unauthorized access
             window.location.href = "/login";
         }
         return Promise.reject(error);

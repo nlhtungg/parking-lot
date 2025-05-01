@@ -5,10 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiHome, HiOfficeBuilding, HiCurrencyDollar, HiDocumentReport, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiDatabase, HiPresentationChartBar } from "react-icons/hi";
 import { HiCheckBadge, HiPresentationChartLine } from "react-icons/hi2";
+import { logout } from "../api/auth.api";
+import api from "../api/config";
 
 const Sidebar = () => {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [userFullName, setUserFullName] = useState("");
+    const [username, setUsername] = useState("");
 
     // Only render on admin pages
     if (!pathname?.startsWith("/admin")) {
@@ -18,6 +22,17 @@ const Sidebar = () => {
     // Close sidebar when navigating between pages
     useEffect(() => {
         setSidebarOpen(false);
+
+        const fetchUserData = async () => {
+            try {
+                const response = await api.get("/admin/");
+                setUserFullName(response.data.data.user.full_name);
+                setUsername(response.data.data.user.username);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        }
+        fetchUserData();
     }, [pathname]);
 
     // Function to check if a link is active
@@ -27,7 +42,7 @@ const Sidebar = () => {
     const navItems = [
         {
             name: "Home",
-            href: "/admin/home",
+            href: "/admin/",
             icon: <HiHome className="mr-3 h-6 w-6" />,
         },
         {
@@ -42,7 +57,7 @@ const Sidebar = () => {
         },
         {
             name: "Monthly pass",
-            href: "/admin/monthly-pass",
+            href: "/admin/monthly-subs",
             icon: <HiCheckBadge className="mr-3 h-6 w-6" />,
         },
         {
@@ -79,6 +94,14 @@ const Sidebar = () => {
                 </Link>
             );
         });
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
     };
 
     return (
@@ -128,10 +151,15 @@ const Sidebar = () => {
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
                             <div className="ml-3">
-                                <p className="text-base font-medium text-gray-700">Admin User</p>
-                                <p className="text-sm font-medium text-gray-500">admin@parking.com</p>
+                               
                             </div>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="ml-auto bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 text-sm font-medium text-gray-700"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>
@@ -148,10 +176,16 @@ const Sidebar = () => {
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
                             <div className="ml-3">
-                                <p className="text-base font-medium text-gray-700">Admin User</p>
-                                <p className="text-sm font-medium text-gray-500">admin@parking.com</p>
+                                <p className="text-base font-medium text-gray-700">{userFullName}</p>
+                                <p className="text-sm font-medium text-gray-500">{username}</p>
                             </div>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="ml-auto bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 text-sm font-medium text-gray-700"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>

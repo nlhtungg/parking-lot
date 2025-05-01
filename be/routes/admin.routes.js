@@ -13,7 +13,7 @@ const adminFeeConfigController = require('../controllers/admin.feeConfig.control
 router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['admin']));
 
 // Dashboard
-router.get('/dashboard', adminController.getDashboard);
+router.get('/', adminController.getDashboard);
 
 // Users Management
 router.get('/users', adminUsersController.getAllUsers);
