@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "./client.config";
 
 export const login = async (credentials) => {
     try {

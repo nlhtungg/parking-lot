@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle } from "react-icons/hi";
 import { HiCheckBadge, HiPresentationChartLine } from "react-icons/hi2";
-import { logout } from "../api/auth.api";
+import { logout } from "../api/auth.client";
 import { useUser } from "./providers/UserProvider";
 
 const Sidebar = () => {

@@ -1,5 +1,6 @@
-import { serverApiFetch } from "./api/server.api";
+import { serverApiFetch } from "./api/server.config";
 import { Lexend } from "next/font/google";
+import { fetchCurrentUserSSR } from "./api/auth.server";
 
 // Components
 import Header from "./components/Header";
@@ -20,11 +21,7 @@ export const metadata = {
 export default async function RootLayout({ children }) {
     let initialUser = null;
     try {
-        const res = await serverApiFetch("/admin/");
-        if (res.ok) {
-            const data = await res.json();
-            initialUser = data.data.user;
-        }
+        initialUser = await fetchCurrentUserSSR();
     } catch (e) {
         initialUser = null;
     }
