@@ -57,20 +57,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Hash password for initial admin account
-const bcrypt = require("bcrypt");
-
-const password = "123456"; // change this to your desired password
-const saltRounds = 10;
-
-bcrypt.hash(password, saltRounds, function (err, hash) {
-    if (err) {
-        console.error("Error hashing password:", err);
-        return;
-    }
-    console.log("Hashed password:", hash);
-});
-
 // Start server
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
