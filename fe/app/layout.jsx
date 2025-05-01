@@ -1,9 +1,11 @@
+import { serverApiFetch } from "./api/server.api";
 import { Lexend } from "next/font/google";
 
 // Components
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import ToastProvider from "./components/ToastProvider";
+import ToastProvider from "./components/providers/ToastProvider";
+import { UserProvider } from "./components/providers/UserProvider";
 
 // Styles
 import "./globals.css";
@@ -15,14 +17,26 @@ export const metadata = {
     description: "Modern parking lot management system",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+    let initialUser = null;
+    try {
+        const res = await serverApiFetch("/admin/");
+        if (res.ok) {
+            const data = await res.json();
+            initialUser = data.data.user;
+        }
+    } catch (e) {
+        initialUser = null;
+    }
     return (
         <html lang="en">
             <body className={`${lexend.className} antialiased min-h-screen flex flex-col`}>
-                <ToastProvider />
-                <Header />
-                <div>{children}</div>
-                <Footer />
+                <UserProvider initialUser={initialUser}>
+                    <ToastProvider />
+                    <Header />
+                    <div>{children}</div>
+                    <Footer />
+                </UserProvider>
             </body>
         </html>
     );

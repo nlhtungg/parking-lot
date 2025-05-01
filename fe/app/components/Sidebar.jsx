@@ -3,16 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HiHome, HiOfficeBuilding, HiCurrencyDollar, HiDocumentReport, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiDatabase, HiPresentationChartBar } from "react-icons/hi";
+import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle } from "react-icons/hi";
 import { HiCheckBadge, HiPresentationChartLine } from "react-icons/hi2";
 import { logout } from "../api/auth.api";
-import api from "../api/config";
+import { useUser } from "./providers/UserProvider";
 
 const Sidebar = () => {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [userFullName, setUserFullName] = useState("");
-    const [username, setUsername] = useState("");
+    const { user } = useUser();
 
     // Only render on admin pages
     if (!pathname?.startsWith("/admin")) {
@@ -22,17 +21,6 @@ const Sidebar = () => {
     // Close sidebar when navigating between pages
     useEffect(() => {
         setSidebarOpen(false);
-
-        const fetchUserData = async () => {
-            try {
-                const response = await api.get("/admin/");
-                setUserFullName(response.data.data.user.full_name);
-                setUsername(response.data.data.user.username);
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            }
-        }
-        fetchUserData();
     }, [pathname]);
 
     // Function to check if a link is active
@@ -53,7 +41,7 @@ const Sidebar = () => {
         {
             name: "Employees",
             href: "/admin/employees",
-            icon: <HiIdentification className="mr-3 h-6 w-6" />
+            icon: <HiIdentification className="mr-3 h-6 w-6" />,
         },
         {
             name: "Monthly pass",
@@ -150,9 +138,7 @@ const Sidebar = () => {
                     </div>
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
-                            <div className="ml-3">
-                               
-                            </div>
+                            <div className="ml-3"></div>
                         </div>
                         <button
                             onClick={handleLogout}
@@ -176,8 +162,8 @@ const Sidebar = () => {
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
                             <div className="ml-3">
-                                <p className="text-base font-medium text-gray-700">{userFullName}</p>
-                                <p className="text-sm font-medium text-gray-500">{username}</p>
+                                <p className="text-base font-medium text-gray-700">{user?.full_name}</p>
+                                <p className="text-sm font-medium text-gray-500">{user?.username}</p>
                             </div>
                         </div>
                         <button

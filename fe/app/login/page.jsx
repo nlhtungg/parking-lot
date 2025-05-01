@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login } from "@/app/api/auth.api";
+import { useUser } from "../components/providers/UserProvider";
 
 export default function Login() {
     const router = useRouter();
+    const { setUser } = useUser();
     const [formData, setFormData] = useState({
         username: "",
         password: "",
@@ -21,6 +23,7 @@ export default function Login() {
 
         try {
             const response = await login(formData);
+            setUser(response.user);
             if (response.user.role === "admin") {
                 router.push("/admin");
             } else {
