@@ -6,7 +6,12 @@ exports.getDashboard = async (req, res) => {
             success: true,
             data: {
                 message: "Welcome to Admin Home",
-                user: req.session.user
+                user: {
+                    user_id : req.session.user.user_id,
+                    username: req.session.user.username,
+                    role: req.session.user.role,
+                    full_name : req.session.user.full_name
+                }
             }
         });
     } catch (error) {

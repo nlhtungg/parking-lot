@@ -54,7 +54,7 @@ exports.createUser = async (req, res) => {
         }
 
         // Validate role
-        const validRoles = ['admin', 'employee', 'user'];
+        const validRoles = ['admin', 'employee'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({
                 success: false,
