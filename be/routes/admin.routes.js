@@ -17,6 +17,7 @@ router.get('/', adminController.getDashboard);
 
 // Users Management
 router.get('/users', adminUsersController.getAllUsers);
+router.get('/users/free-employees', adminUsersController.getAllFreeEmployees);
 router.get('/users/:id', adminUsersController.getUserById);
 router.post('/users', adminUsersController.createUser);
 router.put('/users/:id', adminUsersController.updateUser);

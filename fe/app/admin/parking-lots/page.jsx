@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "../../components/Sidebar";
-import { fetchParkingLots, addParkingLot, updateParkingLot, deleteParkingLot, fetchAllUsers } from "../../api/admin.client";
+import { fetchParkingLots, addParkingLot, updateParkingLot, deleteParkingLot, fetchFreeEmployees } from "../../api/admin.client";
 import { useState, useEffect } from "react";
 
 export default function ParkingLotsPage() {
@@ -30,7 +30,7 @@ function ParkingLots() {
         // Fetch all users for the dropdown
         async function fetchUsers() {
             try {
-                const usersData = await fetchAllUsers(); // Call the API function
+                const usersData = await fetchFreeEmployees(); // Call the API function
                 setUsers(usersData);
             } catch (error) {
                 console.error("Failed to fetch users:", error);
@@ -67,7 +67,7 @@ function ParkingLots() {
             car_capacity: lot.car_capacity,
             bike_capacity: lot.bike_capacity,
             managed_by: lot.managed_by,
-            manager_username: manager ? manager.username : "None",
+            manager_username: manager ? manager.username : "None", // Default to current manager or None
         });
         setShowEditForm(true);
     };
