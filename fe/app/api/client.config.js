@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import toast from "react-hot-toast";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const api = axios.create({
@@ -21,10 +21,10 @@ api.interceptors.response.use(
             // Handle forbidden access based on roles
             const currentPath = window.location.pathname;
             if (currentPath.startsWith("/admin")) {
-                alert("Access denied: Admins only");
+                toast.error("Access denied: Admins only");
                 window.location.href = "/employee";
             } else if (currentPath.startsWith("/employee")) {
-                alert("Access denied: Employees only");
+                toast.error("Access denied: Employees only");
                 window.location.href = "/admmin";
             }
         }
