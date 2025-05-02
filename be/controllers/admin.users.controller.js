@@ -16,6 +16,22 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+exports.getAllFreeEmployees = async (req, res) => {
+    try {
+        const employees = await userRepo.getEmployees();
+        res.status(200).json({
+            success: true,
+            data: employees
+        });
+    } catch (error) {
+        console.error('Get employees error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
+
 exports.getUserById = async (req, res) => {
     try {
         const { id } = req.params;

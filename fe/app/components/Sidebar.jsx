@@ -39,12 +39,12 @@ const Sidebar = () => {
             icon: <HiOfficeBuilding className="mr-3 h-6 w-6" />,
         },
         {
-            name: "Employees",
-            href: "/admin/employees",
+            name: "Users",
+            href: "/admin/users",
             icon: <HiIdentification className="mr-3 h-6 w-6" />,
         },
         {
-            name: "Monthly pass",
+            name: "Monthly subs",
             href: "/admin/monthly-subs",
             icon: <HiCheckBadge className="mr-3 h-6 w-6" />,
         },
