@@ -3,8 +3,8 @@ import { Lexend } from "next/font/google";
 import { fetchCurrentUserSSR } from "./api/auth.server";
 
 // Components
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
 import ToastProvider from "./components/providers/ToastProvider";
 import { UserProvider } from "./components/providers/UserProvider";
 

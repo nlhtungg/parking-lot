@@ -55,3 +55,28 @@ export async function deleteUser(id) {
     const res = await api.delete(`/admin/users/${id}`);
     return res.data.data;
 }
+
+// Fetch free employees (not managing lots)
+export async function fetchFreeEmployees() {
+    const res = await api.get("/admin/users/free-employees");
+    return res.data.data;
+}
+
+// ===================== MONTHLY SUBSCRIPTIONS =====================
+// Fetch all monthly subs
+export async function fetchAllMonthlySubs() {
+    const res = await api.get("/admin/monthly-subs");
+    return res.data.data;
+}
+
+// Create a new monthly sub
+export async function createMonthlySub(sub) {
+    const res = await api.post("/admin/monthly-subs", sub);
+    return res.data.data;
+}
+
+// Delete a monthly sub
+export async function deleteMonthlySub(id) {
+    const res = await api.delete(`/admin/monthly-subs/${id}`);
+    return res.data.data;
+}
