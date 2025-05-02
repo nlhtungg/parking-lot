@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Sidebar from "../../../components/Sidebar";
 import api from "../../../api/client.config";
 
 export default function SingleNotificationPage() {
@@ -42,7 +41,6 @@ export default function SingleNotificationPage() {
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
             <main className="flex-1 p-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">{notification.title}</h1>

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiOutlineCash, HiSpeakerphone } from "react-icons/hi";
 import { HiCheckBadge, HiDocumentCurrencyDollar, HiPresentationChartLine, HiSpeakerXMark } from "react-icons/hi2";
-import { logout } from "../api/auth.client";
-import { useUser } from "./providers/UserProvider";
+import { logout } from "../../api/auth.client";
+import { useUser } from "../providers/UserProvider";
 
 const Sidebar = () => {
     const pathname = usePathname();

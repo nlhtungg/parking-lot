@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "../../components/Sidebar";
 import { fetchFeeConfigurations, updateFeeConfiguration } from "../../api/admin.client";
 
 export default function ConfigPage() {
@@ -57,7 +56,6 @@ function ConfigurationPage() {
 
     return (
         <div className="flex">
-            <Sidebar />
             <main className="p-4 w-full flex justify-center items-center">
                 <div className="w-3/4">
                     <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">Fee Configuration</h1>
