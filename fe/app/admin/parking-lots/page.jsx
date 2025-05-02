@@ -1,7 +1,16 @@
 "use client";
 
 import Sidebar from "../../components/Sidebar";
-import { fetchParkingLots, addParkingLot, updateParkingLot, deleteParkingLot, fetchFreeEmployees } from "../../api/admin.client";
+import Modal from "../../components/Modal";
+import FormField from "../../components/FormField";
+import { IoMdClose } from "react-icons/io";
+import {
+    fetchParkingLots,
+    addParkingLot,
+    updateParkingLot,
+    deleteParkingLot,
+    fetchFreeEmployees,
+} from "../../api/admin.client";
 import { useState, useEffect } from "react";
 
 export default function ParkingLotsPage() {
@@ -15,7 +24,13 @@ function ParkingLots() {
     const [loading, setLoading] = useState(false);
     const [allLots, setAllLots] = useState([]);
     const [fetching, setFetching] = useState(true);
-    const [editForm, setEditForm] = useState({ lot_id: "", lot_name: "", car_capacity: "", bike_capacity: "", managed_by: "" });
+    const [editForm, setEditForm] = useState({
+        lot_id: "",
+        lot_name: "",
+        car_capacity: "",
+        bike_capacity: "",
+        managed_by: "",
+    });
     const [showEditForm, setShowEditForm] = useState(false);
     const [users, setUsers] = useState([]);
 
@@ -72,8 +87,13 @@ function ParkingLots() {
         setShowEditForm(true);
     };
 
+    const handleEditChange = (e) => {
+        setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    };
+
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const { lot_id, ...updateData } = editForm; // Extract lot_id and other fields
             const updatedLot = await updateParkingLot(lot_id, updateData); // Pass lot_id as param, others as body
@@ -86,19 +106,29 @@ function ParkingLots() {
             setShowEditForm(false);
         } catch (error) {
             console.error(`Failed to update lot:`, error);
+            setError(error.message || "Failed to update parking lot");
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleDelete = async (lotId) => {
+        if (!confirm("Are you sure you want to delete this parking lot?")) return;
         try {
             await deleteParkingLot(lotId); // Call the API with the lot ID
-            console.log(`Deleted lot with ID: ${lotId}`);
             // Update the state to remove the deleted lot
             setAllLots(allLots.filter((lot) => lot.lot_id !== lotId));
         } catch (error) {
             console.error(`Failed to delete lot with ID ${lotId}:`, error);
+            alert("Failed to delete parking lot");
         }
     };
+
+    // Create options array for the manager dropdown
+    const managerOptions = [
+        { value: "", label: "None" },
+        ...users.map((user) => ({ value: user.user_id, label: user.username })),
+    ];
 
     return (
         <div style={{ display: "flex" }}>
@@ -150,140 +180,89 @@ function ParkingLots() {
                         </tbody>
                     </table>
                 )}
-                {showForm && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md min-w-[320px] relative">
-                            <button
-                                type="button"
-                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                                onClick={() => setShowForm(false)}
-                            >
-                                ×
-                            </button>
-                            <h2 className="text-lg font-bold mb-4">Add Parking Lot</h2>
-                            {error && <div className="text-red-600 mb-2">{error}</div>}
-                            <div className="mb-2">
-                                <label className="block mb-1">Name</label>
-                                <input
-                                    name="lot_name"
-                                    value={form.lot_name}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block mb-1">Car Capacity</label>
-                                <input
-                                    name="car_capacity"
-                                    type="number"
-                                    value={form.car_capacity}
-                                    onChange={(e) => {
-                                        const value = Math.max(0, Number(e.target.value));
-                                        setForm({ ...form, car_capacity: value });
-                                    }}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Bike Capacity</label>
-                                <input
-                                    name="bike_capacity"
-                                    type="number"
-                                    value={form.bike_capacity}
-                                    onChange={(e) => {
-                                        const value = Math.max(0, Number(e.target.value));
-                                        setForm({ ...form, bike_capacity: value });
-                                    }}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                                disabled={loading}
-                            >
-                                {loading ? "Adding..." : "Add"}
-                            </button>
-                        </form>
-                    </div>
-                )}
-                {showEditForm && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                        <form onSubmit={handleEditSubmit} className="bg-white p-6 rounded shadow-md min-w-[320px] relative">
-                            <button
-                                type="button"
-                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                                onClick={() => setShowEditForm(false)}
-                            >
-                                ×
-                            </button>
-                            <h2 className="text-lg font-bold mb-4">Edit Parking Lot</h2>
-                            <div className="mb-2">
-                                <label className="block mb-1">Name</label>
-                                <input
-                                    name="lot_name"
-                                    value={editForm.lot_name}
-                                    onChange={(e) => setEditForm({ ...editForm, lot_name: e.target.value })}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block mb-1">Car Capacity</label>
-                                <input
-                                    name="car_capacity"
-                                    type="number"
-                                    value={editForm.car_capacity}
-                                    onChange={(e) => {
-                                        const value = e.target.value === "" ? "" : Math.max(0, Number(e.target.value));
-                                        setEditForm({ ...editForm, car_capacity: value });
-                                    }}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block mb-1">Bike Capacity</label>
-                                <input
-                                    name="bike_capacity"
-                                    type="number"
-                                    value={editForm.bike_capacity}
-                                    onChange={(e) => {
-                                        const value = Math.max(0, Number(e.target.value));
-                                        setEditForm({ ...editForm, bike_capacity: value });
-                                    }}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Managed by</label>
-                                <select
-                                    name="managed_by"
-                                    value={editForm.managed_by || ""} // Ensure value is never null
-                                    onChange={(e) => setEditForm({ ...editForm, managed_by: e.target.value || null })} // Allow null value
-                                    className="border px-2 py-1 rounded w-full"
-                                >
-                                    <option value="">None</option> {/* Option for no manager */}
-                                    {users.map((user) => (
-                                        <option key={user.user_id} value={user.user_id}>
-                                            {user.username}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                            >
-                                Save Changes
-                            </button>
-                        </form>
-                    </div>
-                )}
+
+                {/* Add Parking Lot Modal */}
+                <Modal
+                    isOpen={showForm}
+                    onClose={() => setShowForm(false)}
+                    title="Add Parking Lot"
+                    mode="create"
+                    error={error}
+                    loading={loading}
+                    onSubmit={handleSubmit}
+                    submitText="Add"
+                >
+                    <FormField name="lot_name" label="Name" value={form.lot_name} onChange={handleChange} required />
+
+                    <FormField
+                        name="car_capacity"
+                        label="Car Capacity"
+                        type="number"
+                        value={form.car_capacity}
+                        onChange={handleChange}
+                        min={0}
+                        required
+                    />
+
+                    <FormField
+                        name="bike_capacity"
+                        label="Bike Capacity"
+                        type="number"
+                        value={form.bike_capacity}
+                        onChange={handleChange}
+                        min={0}
+                        required
+                    />
+                </Modal>
+
+                {/* Edit Parking Lot Modal */}
+                <Modal
+                    isOpen={showEditForm}
+                    onClose={() => setShowEditForm(false)}
+                    title="Edit Parking Lot"
+                    mode="update"
+                    error={error}
+                    loading={loading}
+                    onSubmit={handleEditSubmit}
+                    submitText="Save Changes"
+                >
+                    <FormField
+                        name="lot_name"
+                        label="Name"
+                        value={editForm.lot_name}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                    <FormField
+                        name="car_capacity"
+                        label="Car Capacity"
+                        type="number"
+                        value={editForm.car_capacity}
+                        onChange={handleEditChange}
+                        min={0}
+                        required
+                    />
+
+                    <FormField
+                        name="bike_capacity"
+                        label="Bike Capacity"
+                        type="number"
+                        value={editForm.bike_capacity}
+                        onChange={handleEditChange}
+                        min={0}
+                        required
+                    />
+
+                    <FormField
+                        name="managed_by"
+                        label="Managed by"
+                        type="select"
+                        value={editForm.managed_by || ""}
+                        onChange={handleEditChange}
+                        options={managerOptions}
+                    />
+                </Modal>
             </div>
         </div>
     );

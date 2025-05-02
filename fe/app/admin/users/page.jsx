@@ -1,7 +1,9 @@
 "use client";
 
 import Sidebar from "../../components/Sidebar";
-import { fetchAllUsers, addUser, updateUser, deleteUser } from "../../api/admin.client";
+import Modal from "../../components/Modal";
+import FormField from "../../components/FormField";
+import { fetchAllUsers, createUser, updateUser, deleteUser } from "../../api/admin.client";
 import { useState, useEffect } from "react";
 
 export default function UsersPage() {
@@ -10,12 +12,12 @@ export default function UsersPage() {
 
 function UsersManagement() {
     const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ username: "", full_name: "", role: "" });
+    const [form, setForm] = useState({ username: "", full_name: "", role: "", password: "" });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [allUsers, setAllUsers] = useState([]);
     const [fetching, setFetching] = useState(true);
-    const [editForm, setEditForm] = useState({ user_id: "", username: "", full_name: "", role: "" });
+    const [editForm, setEditForm] = useState({ user_id: "", username: "", full_name: "", role: "", password: "" });
     const [showEditForm, setShowEditForm] = useState(false);
 
     useEffect(() => {
@@ -41,15 +43,19 @@ function UsersManagement() {
         setLoading(true);
         setError("");
         try {
-            const newUser = await addUser(form);
+            const newUser = await createUser(form);
             setAllUsers([...allUsers, newUser]);
             setShowForm(false);
-            setForm({ username: "", full_name: "", role: "" });
+            resetForm();
         } catch (err) {
             setError(err.response?.data?.message || err.message || "Failed to add user");
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetForm = () => {
+        setForm({ username: "", full_name: "", role: "", password: "" });
     };
 
     const handleEdit = (user) => {
@@ -58,31 +64,53 @@ function UsersManagement() {
             username: user.username,
             full_name: user.full_name,
             role: user.role,
-            password_hash: user.password_hash, // Include current password hash
+            password: "",
         });
         setShowEditForm(true);
     };
 
+    const handleEditChange = (e) => {
+        setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    };
+
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError("");
         try {
             const { user_id, ...updateData } = editForm;
+            // Only include password in update if it was provided
+            if (!updateData.password) {
+                delete updateData.password;
+            }
             const updatedUser = await updateUser(user_id, updateData);
             setAllUsers(allUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user)));
             setShowEditForm(false);
         } catch (error) {
+            setError(error.message || "Failed to update user");
             console.error(`Failed to update user:`, error);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleDelete = async (userId) => {
+        if (!confirm("Are you sure you want to delete this user?")) return;
         try {
             await deleteUser(userId);
             setAllUsers(allUsers.filter((user) => user.user_id !== userId));
         } catch (error) {
             console.error(`Failed to delete user with ID ${userId}:`, error);
+            alert("Failed to delete user");
         }
     };
+
+    // Role options for select dropdown
+    const roleOptions = [
+        { value: "", label: "Select Role" },
+        { value: "admin", label: "Admin" },
+        { value: "employee", label: "Employee" },
+    ];
 
     return (
         <div style={{ display: "flex" }}>
@@ -132,137 +160,107 @@ function UsersManagement() {
                         </tbody>
                     </table>
                 )}
-                {showForm && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md min-w-[320px] relative">
-                            <button
-                                type="button"
-                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                                onClick={() => setShowForm(false)}
-                            >
-                                ×
-                            </button>
-                            <h2 className="text-lg font-bold mb-4">Add User</h2>
-                            {error && <div className="text-red-600 mb-2">{error}</div>}
-                            <div className="mb-2">
-                                <label className="block mb-1">Username</label>
-                                <input
-                                    name="username"
-                                    value={form.username}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block mb-1">Full Name</label>
-                                <input
-                                    name="full_name"
-                                    value={form.full_name}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Role</label>
-                                <select
-                                    name="role"
-                                    value={form.role}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                >
-                                    <option value="">Select Role</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="employee">Employee</option>
-                                </select>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Password</label>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    value={form.password || ""}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                                disabled={loading}
-                            >
-                                {loading ? "Adding..." : "Add"}
-                            </button>
-                        </form>
-                    </div>
-                )}
-                {showEditForm && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                        <form onSubmit={handleEditSubmit} className="bg-white p-6 rounded shadow-md min-w-[320px] relative">
-                            <button
-                                type="button"
-                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                                onClick={() => setShowEditForm(false)}
-                            >
-                                ×
-                            </button>
-                            <h2 className="text-lg font-bold mb-4">Edit User</h2>
-                            <div className="mb-2">
-                                <label className="block mb-1">Username</label>
-                                <input
-                                    name="username"
-                                    value={editForm.username}
-                                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block mb-1">Full Name</label>
-                                <input
-                                    name="full_name"
-                                    value={editForm.full_name}
-                                    onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Role</label>
-                                <select
-                                    name="role"
-                                    value={form.role}
-                                    onChange={handleChange}
-                                    className="border px-2 py-1 rounded w-full"
-                                    required
-                                >
-                                    <option value="">Select Role</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="employee">Employee</option>
-                                </select>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-1">Password</label>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    value={editForm.password || ""}
-                                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                                    className="border px-2 py-1 rounded w-full"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                            >
-                                Save Changes
-                            </button>
-                        </form>
-                    </div>
-                )}
+
+                {/* Add User Modal */}
+                <Modal
+                    isOpen={showForm}
+                    onClose={() => {
+                        setShowForm(false);
+                        resetForm();
+                        setError("");
+                    }}
+                    title="Add User"
+                    mode="create"
+                    error={error}
+                    loading={loading}
+                    onSubmit={handleSubmit}
+                    submitText="Add"
+                >
+                    <FormField
+                        name="username"
+                        label="Username"
+                        value={form.username}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <FormField
+                        name="full_name"
+                        label="Full Name"
+                        value={form.full_name}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <FormField
+                        name="role"
+                        label="Role"
+                        type="select"
+                        value={form.role}
+                        onChange={handleChange}
+                        options={roleOptions}
+                        required
+                    />
+
+                    <FormField
+                        name="password"
+                        label="Password"
+                        type="password"
+                        value={form.password || ""}
+                        onChange={handleChange}
+                        required
+                    />
+                </Modal>
+
+                {/* Edit User Modal */}
+                <Modal
+                    isOpen={showEditForm}
+                    onClose={() => {
+                        setShowEditForm(false);
+                        setError("");
+                    }}
+                    title="Edit User"
+                    mode="update"
+                    error={error}
+                    loading={loading}
+                    onSubmit={handleEditSubmit}
+                    submitText="Save Changes"
+                >
+                    <FormField
+                        name="username"
+                        label="Username"
+                        value={editForm.username}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                    <FormField
+                        name="full_name"
+                        label="Full Name"
+                        value={editForm.full_name}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                    <FormField
+                        name="role"
+                        label="Role"
+                        type="select"
+                        value={editForm.role}
+                        onChange={handleEditChange}
+                        options={roleOptions}
+                        required
+                    />
+
+                    <FormField
+                        name="password"
+                        label="Password"
+                        type="password"
+                        value={editForm.password || ""}
+                        onChange={handleEditChange}
+                        placeholder="Leave blank to keep current password"
+                    />
+                </Modal>
             </div>
         </div>
     );
