@@ -84,37 +84,43 @@ function ConfigurationPage() {
             </main>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center">
-                    <div className="bg-white p-8 rounded-lg shadow-xl w-1/3">
-                        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Edit Fee Configuration</h2>
-                        <div className="mb-6">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-8 rounded-lg shadow-lg w-1/3 relative">
+                        <button
+                            onClick={handleModalClose}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                            ×
+                        </button>
+                        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Edit Fee Configuration</h2>
+                        <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Service Fee</label>
                             <input
                                 type="text"
                                 value={selectedFee.service_fee}
                                 onChange={(e) => setSelectedFee({ ...selectedFee, service_fee: e.target.value })}
-                                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                className="w-full border border-gray-300 rounded-md p-3 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                             />
                         </div>
-                        <div className="mb-6">
+                        <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Penalty Fee</label>
                             <input
                                 type="text"
                                 value={selectedFee.penalty_fee}
                                 onChange={(e) => setSelectedFee({ ...selectedFee, penalty_fee: e.target.value })}
-                                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                className="w-full border border-gray-300 rounded-md p-3 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                             />
                         </div>
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={handleModalClose}
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200"
+                                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
                             >
                                 Save
                             </button>

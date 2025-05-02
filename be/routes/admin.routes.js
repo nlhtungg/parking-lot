@@ -8,6 +8,7 @@ const adminLotsController = require('../controllers/admin.lots.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const adminMonthlySubsController = require('../controllers/admin.monthlysubs.controller');
 const adminFeeConfigController = require('../controllers/admin.feeConfig.controller');
+const adminNotiController = require('../controllers/admin.noti.controller');
 
 // Middleware for all admin routes
 router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['admin']));
@@ -39,5 +40,10 @@ router.delete('/monthly-subs/:id', adminMonthlySubsController.deleteMonthlySub);
 // Fee Configurations
 router.get('/fee-config', adminFeeConfigController.getAllFeeConfigs);
 router.post('/fee-config', adminFeeConfigController.setServiceFee);
+
+// Notifications Management
+router.get('/notifications', adminNotiController.getAllNotifications);
+router.get('/notifications/:id', adminNotiController.getNotificationById);
+router.post('/notifications', adminNotiController.createNotification);
 
 module.exports = router;

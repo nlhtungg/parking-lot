@@ -70,3 +70,21 @@ export async function updateFeeConfiguration(fee) {
     });
     return res.data.data;
 }
+
+// Client: Fetch all notifications
+export async function fetchNotifications() {
+    const res = await api.get("/admin/notifications");
+    return res.data.data;
+}
+
+// Client: Fetch a notification by ID
+export async function fetchNotificationById(id) {
+    const res = await api.get(`/admin/notifications/${id}`);
+    return res.data.data;
+}
+
+// Client: Add a new notification
+export async function addNotification(notification) {
+    const res = await api.post("/admin/notifications", notification);
+    return res.data.data;
+}
