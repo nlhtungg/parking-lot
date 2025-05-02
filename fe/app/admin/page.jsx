@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "../components/Sidebar";
-import api from "../api/config";
+import api from "../api/client.config";
 import { useEffect, useState } from "react";
 
 export default function AdminPage() {
