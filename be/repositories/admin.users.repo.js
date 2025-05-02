@@ -8,12 +8,7 @@ exports.getAllUsers = async () => {
             username,
             full_name,
             role,
-            created_at,
-            (
-                SELECT lot_name 
-                FROM ParkingLots 
-                WHERE managed_by = Users.user_id
-            ) as managing_lot
+            created_at
         FROM Users
         ORDER BY user_id
     `;
