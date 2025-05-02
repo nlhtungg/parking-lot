@@ -20,13 +20,5 @@ export default function AdminPage() {
         fetchUserData();
     }, []);
 
-    return (
-        <div style={{ display: "flex" }}>
-            <Sidebar />
-            <div style={{ marginLeft: "20px", padding: "10px" }}>
-                <h1>Welcome, {userName}</h1>
-                {/* Main content area */}
-            </div>
-        </div>
-    );
+    return <div style={{ display: "flex" }}></div>;
 }
