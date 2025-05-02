@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiOutlineCash, HiSpeakerphone } from "react-icons/hi";
 import { HiCheckBadge, HiDocumentCurrencyDollar, HiPresentationChartLine, HiSpeakerXMark } from "react-icons/hi2";
+
 import { logout } from "../../api/auth.client";
 import { useUser } from "../providers/UserProvider";
 
@@ -49,11 +51,13 @@ const Sidebar = () => {
             icon: <HiCheckBadge className="mr-3 h-6 w-6" />,
         },
         {
+
             name: "Payments",
             href: "/admin/payments",
             icon: <HiDocumentCurrencyDollar className="mr-3 h-6 w-6" />,
         },
         {
+
             name: "Lost tickets",
             href: "/admin/lost-tickets",
             icon: <HiQuestionMarkCircle className="mr-3 h-6 w-6" />,
@@ -68,6 +72,7 @@ const Sidebar = () => {
             href: "/admin/config",
             icon: <HiCog className="mr-3 h-6 w-6" />,
         },
+
         {
             name: "Notifications",
             href: "/admin/notifications",

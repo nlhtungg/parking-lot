@@ -81,7 +81,6 @@ export async function deleteMonthlySub(id) {
     return res.data.data;
 }
 
-
 // Client: Fetch all fee configurations
 export async function fetchFeeConfigurations() {
     const res = await api.get("/admin/fee-config");
