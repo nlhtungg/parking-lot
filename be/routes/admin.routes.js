@@ -37,6 +37,7 @@ router.post('/monthly-subs', adminMonthlySubsController.createMonthlySub);
 router.delete('/monthly-subs/:id', adminMonthlySubsController.deleteMonthlySub);
 
 // Fee Configurations
+router.get('/fee-config', adminFeeConfigController.getAllFeeConfigs);
 router.post('/fee-config', adminFeeConfigController.setServiceFee);
 
 module.exports = router;

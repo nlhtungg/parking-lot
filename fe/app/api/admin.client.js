@@ -53,3 +53,20 @@ export async function deleteUser(id) {
     const res = await api.delete(`/admin/users/${id}`);
     return res.data.data;
 }
+
+// Client: Fetch all fee configurations
+export async function fetchFeeConfigurations() {
+    const res = await api.get("/admin/fee-config");
+    return res.data.data;
+}
+
+// Client: Update a fee configuration
+export async function updateFeeConfiguration(fee) {
+    const res = await api.post("/admin/fee-config", {
+        ticket_type: fee.ticket_type,
+        vehicle_type: fee.vehicle_type,
+        service_fee: fee.service_fee,
+        penalty_fee: fee.penalty_fee,
+    });
+    return res.data.data;
+}
