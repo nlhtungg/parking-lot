@@ -2,44 +2,41 @@ const express = require('express');
 const router = express.Router();
 
 // Import controllers
-const { getDashboard } = require('../controllers/admin.controller');
-const {
-    getAllUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-    getAvailableEmployees
-} = require('../controllers/admin.users.controller');
-const {
-    getAllParkingLots,
-    getParkingLotById,
-    createParkingLot,
-    updateParkingLot,
-    deleteParkingLot
-} = require('../controllers/admin.lots.controller');
-
-const { isAuthenticated, hasRole } = require('../middlewares/auth.middleware');
+const adminController = require('../controllers/admin.controller');
+const adminUsersController = require('../controllers/admin.users.controller');
+const adminLotsController = require('../controllers/admin.lots.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
+const adminMonthlySubsController = require('../controllers/admin.monthlysubs.controller');
+const adminFeeConfigController = require('../controllers/admin.feeConfig.controller');
 
 // Middleware for all admin routes
-router.use(isAuthenticated, hasRole('admin'));
+router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['admin']));
 
 // Dashboard
-router.get('/dashboard', getDashboard);
+router.get('/', adminController.getDashboard);
 
 // Users Management
-router.get('/users', getAllUsers);
-router.get('/users/:id', getUserById);
-router.post('/users', createUser);
-router.put('/users/:id', updateUser);
-router.delete('/users/:id', deleteUser);
-router.get('/employees/available', getAvailableEmployees);
+router.get('/users', adminUsersController.getAllUsers);
+router.get('/users/free-employees', adminUsersController.getAllFreeEmployees);
+router.get('/users/:id', adminUsersController.getUserById);
+router.post('/users', adminUsersController.createUser);
+router.put('/users/:id', adminUsersController.updateUser);
+router.delete('/users/:id', adminUsersController.deleteUser);
+router.get('/employees/available', adminUsersController.getAvailableEmployees);
 
 // Parking Lots Management
-router.get('/parking-lots', getAllParkingLots);
-router.get('/parking-lots/:id', getParkingLotById);
-router.post('/parking-lots', createParkingLot);
-router.put('/parking-lots/:id', updateParkingLot);
-router.delete('/parking-lots/:id', deleteParkingLot);
+router.get('/parking-lots', adminLotsController.getAllParkingLots);
+router.get('/parking-lots/:id', adminLotsController.getParkingLotById);
+router.post('/parking-lots', adminLotsController.createParkingLot);
+router.put('/parking-lots/:id', adminLotsController.updateParkingLot);
+router.delete('/parking-lots/:id', adminLotsController.deleteParkingLot);
 
-module.exports = router; 
+// Monthly Subs Management
+router.get('/monthly-subs', adminMonthlySubsController.getAllMonthlySubs);
+router.post('/monthly-subs', adminMonthlySubsController.createMonthlySub);
+router.delete('/monthly-subs/:id', adminMonthlySubsController.deleteMonthlySub);
+
+// Fee Configurations
+router.post('/fee-config', adminFeeConfigController.setServiceFee);
+
+module.exports = router;

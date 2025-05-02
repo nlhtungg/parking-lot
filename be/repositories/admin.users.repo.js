@@ -7,14 +7,31 @@ exports.getAllUsers = async () => {
             user_id,
             username,
             full_name,
+            password_hash,
             role,
-            created_at,
-            (
-                SELECT lot_name 
-                FROM ParkingLots 
-                WHERE managed_by = Users.user_id
-            ) as managing_lot
+            created_at
         FROM Users
+        ORDER BY user_id
+    `;
+    const result = await pool.query(query);
+    return result.rows;
+};
+
+exports.getAllFreeEmployees = async () => {
+    const query = `
+        SELECT
+            user_id,
+            username,
+            full_name,
+            role,
+            created_at
+        FROM Users
+        WHERE role = 'employee'
+        AND user_id NOT IN (
+            SELECT managed_by
+            FROM ParkingLots
+            WHERE managed_by IS NOT NULL
+        )
         ORDER BY user_id
     `;
     const result = await pool.query(query);

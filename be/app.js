@@ -30,18 +30,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Session configuration
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            //secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        },
-    })
-);
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        //secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 8 * 60 * 60 * 1000 + (7 * 60 * 60 * 1000) // 8 hours + (GMT+7)
+    }
+}));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -57,22 +55,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Hash password for initial admin account
-const bcrypt = require("bcrypt");
-
-const password = "123456"; // change this to your desired password
-const saltRounds = 10;
-
-bcrypt.hash(password, saltRounds, function (err, hash) {
-    if (err) {
-        console.error("Error hashing password:", err);
-        return;
-    }
-    console.log("Hashed password:", hash);
-});
-
 // Start server
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

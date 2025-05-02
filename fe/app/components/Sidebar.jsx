@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HiHome, HiOfficeBuilding, HiCurrencyDollar, HiDocumentReport, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiDatabase, HiPresentationChartBar } from "react-icons/hi";
+import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle } from "react-icons/hi";
 import { HiCheckBadge, HiPresentationChartLine } from "react-icons/hi2";
+import { logout } from "../api/auth.client";
+import { useUser } from "./providers/UserProvider";
 
 const Sidebar = () => {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { user } = useUser();
 
     // Only render on admin pages
     if (!pathname?.startsWith("/admin")) {
@@ -27,7 +30,7 @@ const Sidebar = () => {
     const navItems = [
         {
             name: "Home",
-            href: "/admin/home",
+            href: "/admin/",
             icon: <HiHome className="mr-3 h-6 w-6" />,
         },
         {
@@ -36,13 +39,13 @@ const Sidebar = () => {
             icon: <HiOfficeBuilding className="mr-3 h-6 w-6" />,
         },
         {
-            name: "Employees",
-            href: "/admin/employees",
-            icon: <HiIdentification className="mr-3 h-6 w-6" />
+            name: "Users",
+            href: "/admin/users",
+            icon: <HiIdentification className="mr-3 h-6 w-6" />,
         },
         {
-            name: "Monthly pass",
-            href: "/admin/monthly-pass",
+            name: "Monthly subs",
+            href: "/admin/monthly-subs",
             icon: <HiCheckBadge className="mr-3 h-6 w-6" />,
         },
         {
@@ -79,6 +82,14 @@ const Sidebar = () => {
                 </Link>
             );
         });
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
     };
 
     return (
@@ -127,11 +138,14 @@ const Sidebar = () => {
                     </div>
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
-                            <div className="ml-3">
-                                <p className="text-base font-medium text-gray-700">Admin User</p>
-                                <p className="text-sm font-medium text-gray-500">admin@parking.com</p>
-                            </div>
+                            <div className="ml-3"></div>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="ml-auto bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 text-sm font-medium text-gray-700"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>
@@ -148,10 +162,16 @@ const Sidebar = () => {
                     <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                         <div className="flex items-center">
                             <div className="ml-3">
-                                <p className="text-base font-medium text-gray-700">Admin User</p>
-                                <p className="text-sm font-medium text-gray-500">admin@parking.com</p>
+                                <p className="text-base font-medium text-gray-700">{user?.full_name}</p>
+                                <p className="text-sm font-medium text-gray-500">{user?.username}</p>
                             </div>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="ml-auto bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 text-sm font-medium text-gray-700"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>

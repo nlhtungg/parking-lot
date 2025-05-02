@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "./client.config";
 
 export const login = async (credentials) => {
     try {
@@ -12,7 +12,7 @@ export const login = async (credentials) => {
 export const logout = async () => {
     try {
         await api.post("/auth/logout");
-        window.location.href = "/login";
+        window.location.href = "/";
     } catch (error) {
         throw error.response?.data || error.message;
     }

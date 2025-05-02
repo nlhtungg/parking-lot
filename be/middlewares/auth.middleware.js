@@ -8,10 +8,10 @@ function isAuthenticated(req, res, next) {
   }
   
   // Middleware kiểm tra quyền (role) của người dùng
-  function hasRole(role) {
+  function hasRole(roles) {
     return (req, res, next) => {
-      if (req.session.user && req.session.user.role === role) {
-        return next();  // Nếu người dùng có quyền truy cập (ví dụ: role là 'Admin')
+      if (req.session.user && roles.includes(req.session.user.role)) {
+        return next();  // Nếu người dùng có quyền truy cập
       } else {
         return res.status(403).json({ message: 'Forbidden. You do not have the required permissions.' });  // Trả về lỗi nếu không có quyền
       }
