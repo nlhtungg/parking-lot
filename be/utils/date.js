@@ -9,4 +9,9 @@ function getDayAfterMonths(start_date, months) {
     return date.toISOString().slice(0, 10);
 }
 
+exports.calculateHoursDifference = (startDate, endDate) => {
+  const diffMs = Math.abs(endDate - startDate);
+  const diffHours = diffMs / (1000 * 60 * 60);
+  return diffHours;
+};
   module.exports = { getToday,getDayAfterMonths };

@@ -102,3 +102,14 @@ exports.deleteParkingLot = async (lotId) => {
     const result = await pool.query(query, [lotId]);
     return result.rows[0];
 }; 
+
+// Add the new function here
+exports.getParkingLotByManager = async (managerId) => {
+    const query = `
+        SELECT *
+        FROM ParkingLots
+        WHERE managed_by = $1
+    `;
+    const result = await pool.query(query, [managerId]);
+    return result.rows[0];
+};
