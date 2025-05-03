@@ -2,35 +2,63 @@ const { pool } = require('../config/db');
 const { getToday } = require('../utils/date');
 
 exports.startSession = async (sessionData) => {
-    const {
-        lot_id,
-        license_plate,
-        vehicle_type,
-        ticket_type,
-        recorded_by
-    } = sessionData;
+    // Start a transaction
+    const client = await pool.connect();
     
-    const query = `
-        INSERT INTO ParkingSessions (
+    try {
+        await client.query('BEGIN');
+        
+        const {
             lot_id,
             license_plate,
             vehicle_type,
-            ticket_type,
-            time_in,
-            recorded_by
-        ) VALUES ($1, $2, $3, $4, NOW(), $5)
-        RETURNING *
-    `;
-    
-    const result = await pool.query(query, [
-        lot_id,
-        license_plate,
-        vehicle_type,
-        ticket_type,
-        recorded_by
-    ]);
-    
-    return result.rows[0];
+            is_monthly
+        } = sessionData;
+        
+        // Insert the new session - added parking_fee with default value of 0
+        const query = `
+            INSERT INTO ParkingSessions (
+                lot_id,
+                license_plate,
+                vehicle_type,
+                is_monthly,
+                time_in,
+                parking_fee
+            ) VALUES ($1, $2, $3, $4, NOW(), 0)
+            RETURNING *
+        `;
+        
+        const result = await client.query(query, [
+            lot_id,
+            license_plate,
+            vehicle_type,
+            is_monthly
+        ]);
+        
+        // Update the parking lot vehicle count
+        const column = vehicle_type.toLowerCase() === 'car' ? 'current_car' : 'current_bike';
+        
+        const updateLotQuery = `
+            UPDATE ParkingLots
+            SET ${column} = ${column} + 1
+            WHERE lot_id = $1
+            RETURNING *
+        `;
+        
+        await client.query(updateLotQuery, [lot_id]);
+        
+        // Commit the transaction
+        await client.query('COMMIT');
+        
+        return result.rows[0];
+    } catch (error) {
+        // Rollback in case of error
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        // Release the client
+        client.release();
+    }
 };
 
 exports.getSession = async (sessionId) => {
@@ -42,38 +70,12 @@ exports.getSession = async (sessionId) => {
             fc.penalty_fee
         FROM ParkingSessions ps
         JOIN ParkingLots pl ON ps.lot_id = pl.lot_id
-        LEFT JOIN FeeConfigs fc ON ps.ticket_type = fc.ticket_type AND ps.vehicle_type = fc.vehicle_type
+        LEFT JOIN FeeConfigs fc ON ps.vehicle_type = fc.vehicle_type
         WHERE ps.session_id = $1
     `;
     
     const result = await pool.query(query, [sessionId]);
     return result.rows[0];
-};
-
-exports.endSession = async (sessionId, payment_amount) => {
-    const query = `
-        UPDATE ParkingSessions
-        SET 
-            time_out = NOW(),
-            payment_amount = $2,
-            status = 'completed'
-        WHERE session_id = $1
-        RETURNING *
-    `;
-    
-    const result = await pool.query(query, [sessionId, payment_amount]);
-    return result.rows[0];
-};
-
-exports.getActiveSessionsByLot = async (lotId) => {
-    const query = `
-        SELECT * FROM ParkingSessions
-        WHERE lot_id = $1 AND time_out IS NULL
-        ORDER BY time_in DESC
-    `;
-    
-    const result = await pool.query(query, [lotId]);
-    return result.rows;
 };
 
 exports.checkMonthlySub = async (license_plate, current_date) => {
@@ -88,30 +90,142 @@ exports.checkMonthlySub = async (license_plate, current_date) => {
     return result.rows[0];
 };
 
-exports.incrementLotVehicleCount = async (lotId, vehicleType) => {
-    const column = vehicleType === 'car' ? 'current_car' : 'current_bike';
+exports.createPendingPayment = async (paymentData) => {
+    const {
+        session_id,
+        sub_id,
+        total_amount
+    } = paymentData;
     
+    // Changed "Payments" to "Payment" to match your database schema
     const query = `
-        UPDATE ParkingLots
-        SET ${column} = ${column} + 1
-        WHERE lot_id = $1
+        INSERT INTO Payment (
+            session_id,
+            sub_id,
+            payment_method,
+            total_amount
+        ) VALUES ($1, $2, 'PENDING', $3)
         RETURNING *
     `;
     
-    const result = await pool.query(query, [lotId]);
+    const result = await pool.query(query, [
+        session_id,
+        sub_id || null,
+        total_amount
+    ]);
+    
     return result.rows[0];
 };
 
-exports.decrementLotVehicleCount = async (lotId, vehicleType) => {
-    const column = vehicleType === 'car' ? 'current_car' : 'current_bike';
+exports.confirmPayment = async (paymentData) => {
+    // Start a transaction
+    const client = await pool.connect();
     
+    try {
+        await client.query('BEGIN');
+        
+        const {
+            payment_id,
+            payment_method,
+            session_id,
+            is_lost
+        } = paymentData;
+        
+        // Update the payment - changed "Payments" to "Payment"
+        const updatePaymentQuery = `
+            UPDATE Payment
+            SET 
+                payment_method = $1,
+                payment_date = NOW()
+            WHERE payment_id = $2
+            RETURNING *
+        `;
+        
+        const paymentResult = await client.query(updatePaymentQuery, [
+            payment_method,
+            payment_id
+        ]);
+        
+        // Get session details
+        const sessionQuery = `
+            SELECT * FROM ParkingSessions
+            WHERE session_id = $1
+        `;
+        
+        const sessionResult = await client.query(sessionQuery, [session_id]);
+        const session = sessionResult.rows[0];
+        
+        // Update the session
+        const updateSessionQuery = `
+            UPDATE ParkingSessions
+            SET 
+                time_out = NOW(),
+                is_lost = $1
+            WHERE session_id = $2
+            RETURNING *
+        `;
+        
+        const updatedSessionResult = await client.query(updateSessionQuery, [
+            is_lost || false,
+            session_id
+        ]);
+        
+        // Update the parking lot vehicle count
+        const column = session.vehicle_type.toLowerCase() === 'car' ? 'current_car' : 'current_bike';
+        
+        const updateLotQuery = `
+            UPDATE ParkingLots
+            SET ${column} = ${column} - 1
+            WHERE lot_id = $1
+            RETURNING *
+        `;
+        
+        await client.query(updateLotQuery, [session.lot_id]);
+        
+        // If lost ticket, create a report
+        if (is_lost) {
+            const lostTicketQuery = `
+                INSERT INTO LostTicketReport (
+                    session_id,
+                    guest_identification,
+                    guest_phone,
+                    penalty_fee
+                ) VALUES ($1, 'UNKNOWN', 'UNKNOWN', $2)
+            `;
+            
+            // Use the penalty fee from the fee config or a default value
+            const penaltyFee = session.penalty_fee || 50000;
+            
+            await client.query(lostTicketQuery, [
+                session_id,
+                penaltyFee
+            ]);
+        }
+        
+        // Commit the transaction
+        await client.query('COMMIT');
+        
+        return {
+            payment: paymentResult.rows[0],
+            session: updatedSessionResult.rows[0]
+        };
+    } catch (error) {
+        // Rollback in case of error
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        // Release the client
+        client.release();
+    }
+};
+
+exports.getActiveSessionsByLot = async (lotId) => {
     const query = `
-        UPDATE ParkingLots
-        SET ${column} = ${column} - 1
-        WHERE lot_id = $1
-        RETURNING *
+        SELECT * FROM ParkingSessions
+        WHERE lot_id = $1 AND time_out IS NULL
+        ORDER BY time_in DESC
     `;
     
     const result = await pool.query(query, [lotId]);
-    return result.rows[0];
+    return result.rows;
 };
