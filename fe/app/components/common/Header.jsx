@@ -10,7 +10,7 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Don't render header on auth pages
-    if (pathname?.startsWith("/login") || pathname?.startsWith("/admin")) {
+    if (pathname?.startsWith("/login") || pathname?.startsWith("/admin") || pathname?.startsWith("/employee")) {
         return null;
     }
 

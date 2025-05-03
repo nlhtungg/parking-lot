@@ -25,7 +25,7 @@ api.interceptors.response.use(
                 window.location.href = "/employee";
             } else if (currentPath.startsWith("/employee")) {
                 toast.error("Access denied: Employees only");
-                window.location.href = "/admmin";
+                window.location.href = "/admin";
             }
         }
         return Promise.reject(error);

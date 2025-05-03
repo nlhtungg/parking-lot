@@ -7,7 +7,7 @@ const Footer = () => {
     const pathname = usePathname();
 
     // Don't render footer on auth pages
-    if (pathname?.startsWith("/login") || pathname?.startsWith("/admin")) {
+    if (pathname?.startsWith("/login") || pathname?.startsWith("/admin") || pathname?.startsWith("/employee")) {
         return null;
     }
 
