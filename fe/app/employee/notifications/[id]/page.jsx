@@ -14,7 +14,7 @@ export default function SingleNotificationPage() {
     useEffect(() => {
         const fetchNotification = async () => {
             try {
-                const response = await api.get(`/admin/notifications/${notificationId}`);
+                const response = await api.get(`/employee/notifications/${notificationId}`);
                 setNotification(response.data.data);
             } catch (err) {
                 setError("Failed to load notification.");
@@ -44,7 +44,7 @@ export default function SingleNotificationPage() {
             <main className="flex-1 p-6">
                 <div className="bg-white shadow-md rounded-lg p-6 relative">
                     <Link
-                        href="/admin/"
+                        href="/employee/"
                         className="absolute top-4 left-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
                         Back

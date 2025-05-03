@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "../api/client.config";
 import { useEffect, useState } from "react";
 
-export default function AdminPage() {
+export default function EmployeePage() {
     const [userName, setUserName] = useState("");
     const [notifications, setNotifications] = useState([]);
     const router = useRouter();
@@ -14,7 +14,7 @@ export default function AdminPage() {
         // Fetch user data from backend server with credentials
         const fetchUserData = async () => {
             try {
-                const response = await api.get("/admin/");
+                const response = await api.get("/employee/");
                 setUserName(response.data.data.user.full_name);
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -23,7 +23,7 @@ export default function AdminPage() {
 
         const fetchNotifications = async () => {
             try {
-                const response = await api.get("/admin/notifications");
+                const response = await api.get("/employee/notifications");
                 setNotifications(response.data.data.slice(0, 3)); // Display the latest 3 notifications
             } catch (error) {
                 console.error("Error fetching notifications:", error);
@@ -51,65 +51,58 @@ export default function AdminPage() {
             <main className="flex-1 p-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome, {userName}</h1>
-                    <p className="text-gray-600 mb-6">
-                        This is your admin dashboard. From here, you can manage users, parking lots, fee configurations, and more.
-                    </p>
+                    <blockquote className="italic text-gray-500 border-l-4 border-gray-300 pl-4 mb-6">
+                        "The only way to do great work is to love what you do." – Steve Jobs
+                    </blockquote>
                     <div className="grid grid-cols-2 gap-6">
                         <div
                             className="bg-blue-100 text-blue-800 p-4 rounded-lg shadow-md hover:bg-blue-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/users")}
+                            onClick={() => handleNavigation("/employee/monitor")}
                         >
-                            <h2 className="text-xl font-semibold">Manage Users</h2>
-                            <p className="text-sm">Add, edit, or remove users from the system.</p>
+                            <h2 className="text-xl font-semibold">Monitor Parking Lot</h2>
+                            <p className="text-sm">View your parking lot's status.</p>
                         </div>
                         <div
                             className="bg-green-100 text-green-800 p-4 rounded-lg shadow-md hover:bg-green-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/parking-lots")}
+                            onClick={() => handleNavigation("/employee/checkin")}
                         >
-                            <h2 className="text-xl font-semibold">Manage Parking Lots</h2>
-                            <p className="text-sm">View and update parking lot details.</p>
+                            <h2 className="text-xl font-semibold">Process Check-in</h2>
+                            <p className="text-sm">Approve vehicle into parking lot.</p>
                         </div>
                         <div
                             className="bg-yellow-100 text-yellow-800 p-4 rounded-lg shadow-md hover:bg-yellow-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/config")}
+                            onClick={() => handleNavigation("/employee/lost-tickets")}
                         >
-                            <h2 className="text-xl font-semibold">Fee Configurations</h2>
-                            <p className="text-sm">Set and update service and penalty fees.</p>
+                            <h2 className="text-xl font-semibold">Lost tickets</h2>
+                            <p className="text-sm">Make reports for lost tickets.</p>
                         </div>
                         <div
                             className="bg-red-100 text-red-800 p-4 rounded-lg shadow-md hover:bg-red-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/monthly-subs")}
+                            onClick={() => handleNavigation("/employee/checkout")}
                         >
-                            <h2 className="text-xl font-semibold">Monthly Subscriptions</h2>
-                            <p className="text-sm">Manage monthly parking subscriptions.</p>
+                            <h2 className="text-xl font-semibold">Process Check-out</h2>
+                            <p className="text-sm">Approve vehicle out of parking lot and charge.</p>
                         </div>
                         <div
                             className="bg-purple-100 text-purple-800 p-4 rounded-lg shadow-md hover:bg-purple-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/payments")}
+                            onClick={() => handleNavigation("/employee/payments")}
                         >
                             <h2 className="text-xl font-semibold">Payments</h2>
                             <p className="text-sm">Track and manage all payment transactions.</p>
                         </div>
                         <div
                             className="bg-indigo-100 text-indigo-800 p-4 rounded-lg shadow-md hover:bg-indigo-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/lost-tickets")}
+                            onClick={() => handleNavigation("/employee/profile")}
                         >
-                            <h2 className="text-xl font-semibold">Lost Tickets</h2>
-                            <p className="text-sm">Handle and resolve lost ticket cases.</p>
-                        </div>
-                        <div
-                            className="bg-teal-100 text-teal-800 p-4 rounded-lg shadow-md hover:bg-teal-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/insight")}
-                        >
-                            <h2 className="text-xl font-semibold">Insight</h2>
-                            <p className="text-sm">View analytics and insights for better decision-making.</p>
+                            <h2 className="text-xl font-semibold">Profile</h2>
+                            <p className="text-sm">View and change your informations.</p>
                         </div>
                         <div
                             className="bg-gray-100 text-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/notifications")}
+                            onClick={() => handleNavigation("/employee/notifications")}
                         >
                             <h2 className="text-xl font-semibold">Notifications</h2>
-                            <p className="text-sm">Manage and send notifications to users.</p>
+                            <p className="text-sm">Keep track with the lastest news.</p>
                         </div>
                     </div>
                 </div>
@@ -122,7 +115,9 @@ export default function AdminPage() {
                                 <div
                                     key={index}
                                     className="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition cursor-pointer"
-                                    onClick={() => router.push(`/admin/notifications/${notification.id}`)}
+                                    onClick={() =>
+                                        router.push(`/employee/notifications/${notification.noti_id}`)
+                                    }
                                 >
                                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{notification.title}</h3>
                                     <p className="text-sm text-gray-600 mb-2">
@@ -130,7 +125,9 @@ export default function AdminPage() {
                                             ? `${notification.message.slice(0, 30)}...`
                                             : notification.message}
                                     </p>
-                                    <p className="text-xs text-gray-400">{new Date(notification.created_at).toLocaleDateString()} by {notification.username}</p>
+                                    <p className="text-xs text-gray-400">
+                                        {new Date(notification.created_at).toLocaleDateString()} by {notification.username}
+                                    </p>
                                 </div>
                             ))}
                         </div>

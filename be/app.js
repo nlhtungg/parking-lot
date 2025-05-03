@@ -11,6 +11,7 @@ dotenv.config();
 // Import routes
 const authRoutes = require("./routes/auth.routes");
 const adminRoutes = require("./routes/admin.routes");
+const employeeRoutes = require("./routes/employee.routes");
 
 // Initialize express app
 const app = express();
@@ -44,6 +45,7 @@ app.use(session({
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/employee", employeeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
