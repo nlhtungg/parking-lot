@@ -4,23 +4,30 @@
 import { useRouter } from "next/navigation";
 import api from "../api/client.config";
 import { useEffect, useState } from "react";
+import { useUser } from "../components/providers/UserProvider";
+import {
+    HiUserGroup,
+    HiOfficeBuilding,
+    HiCash,
+    HiCreditCard,
+    HiDocumentText,
+    HiExclamation,
+    HiChartBar,
+    HiBell,
+} from "react-icons/hi";
 
 export default function AdminPage() {
-    const [userName, setUserName] = useState("");
+    const { user } = useUser();
     const [notifications, setNotifications] = useState([]);
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+        totalLots: 0,
+        monthlyRevenue: 0,
+        activeSubscriptions: 0,
+    });
     const router = useRouter();
 
     useEffect(() => {
-        // Fetch user data from backend server with credentials
-        const fetchUserData = async () => {
-            try {
-                const response = await api.get("/admin/");
-                setUserName(response.data.data.user.full_name);
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            }
-        };
-
         const fetchNotifications = async () => {
             try {
                 const response = await api.get("/admin/notifications");
@@ -30,8 +37,18 @@ export default function AdminPage() {
             }
         };
 
-        fetchUserData();
+        // Mock stats for now - replace with actual API calls later
+        const fetchStats = () => {
+            setStats({
+                totalUsers: 156,
+                totalLots: 8,
+                monthlyRevenue: 24650,
+                activeSubscriptions: 87,
+            });
+        };
+
         fetchNotifications();
+        fetchStats();
     }, []);
 
     const handleNavigation = (path) => {
@@ -49,93 +66,152 @@ export default function AdminPage() {
     return (
         <div className="flex min-h-screen bg-gray-50">
             <main className="flex-1 p-6">
-                <div className="bg-white shadow-md rounded-lg p-6">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome, {userName}</h1>
-                    <p className="text-gray-600 mb-6">
-                        This is your admin dashboard. From here, you can manage users, parking lots, fee configurations, and more.
-                    </p>
-                    <div className="grid grid-cols-2 gap-6">
+                {/* Welcome Banner */}
+                <div className="bg-gradient-to-r from-indigo-600 to-blue-500 shadow-lg rounded-lg p-6 mb-6">
+                    <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.full_name}</h1>
+                    <p className="text-indigo-100">Here's what's happening with your parking system today.</p>
+                </div>
+
+                {/* Quick Access Cards */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div
-                            className="bg-blue-100 text-blue-800 p-4 rounded-lg shadow-md hover:bg-blue-200 transition cursor-pointer"
+                            className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center cursor-pointer"
                             onClick={() => handleNavigation("/admin/users")}
                         >
-                            <h2 className="text-xl font-semibold">Manage Users</h2>
-                            <p className="text-sm">Add, edit, or remove users from the system.</p>
+                            <div className="bg-blue-100 p-3 rounded-full mb-3">
+                                <HiUserGroup className="text-blue-500 text-xl" />
+                            </div>
+                            <h3 className="text-md font-semibold text-center">Manage Users</h3>
                         </div>
+
                         <div
-                            className="bg-green-100 text-green-800 p-4 rounded-lg shadow-md hover:bg-green-200 transition cursor-pointer"
+                            className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center cursor-pointer"
                             onClick={() => handleNavigation("/admin/parking-lots")}
                         >
-                            <h2 className="text-xl font-semibold">Manage Parking Lots</h2>
-                            <p className="text-sm">View and update parking lot details.</p>
+                            <div className="bg-green-100 p-3 rounded-full mb-3">
+                                <HiOfficeBuilding className="text-green-500 text-xl" />
+                            </div>
+                            <h3 className="text-md font-semibold text-center">Parking Lots</h3>
                         </div>
+
                         <div
-                            className="bg-yellow-100 text-yellow-800 p-4 rounded-lg shadow-md hover:bg-yellow-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/config")}
-                        >
-                            <h2 className="text-xl font-semibold">Fee Configurations</h2>
-                            <p className="text-sm">Set and update service and penalty fees.</p>
-                        </div>
-                        <div
-                            className="bg-red-100 text-red-800 p-4 rounded-lg shadow-md hover:bg-red-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/monthly-subs")}
-                        >
-                            <h2 className="text-xl font-semibold">Monthly Subscriptions</h2>
-                            <p className="text-sm">Manage monthly parking subscriptions.</p>
-                        </div>
-                        <div
-                            className="bg-purple-100 text-purple-800 p-4 rounded-lg shadow-md hover:bg-purple-200 transition cursor-pointer"
+                            className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center cursor-pointer"
                             onClick={() => handleNavigation("/admin/payments")}
                         >
-                            <h2 className="text-xl font-semibold">Payments</h2>
-                            <p className="text-sm">Track and manage all payment transactions.</p>
+                            <div className="bg-yellow-100 p-3 rounded-full mb-3">
+                                <HiCash className="text-yellow-500 text-xl" />
+                            </div>
+                            <h3 className="text-md font-semibold text-center">Payments</h3>
                         </div>
+
                         <div
-                            className="bg-indigo-100 text-indigo-800 p-4 rounded-lg shadow-md hover:bg-indigo-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/lost-tickets")}
+                            className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center cursor-pointer"
+                            onClick={() => handleNavigation("/admin/monthly-subs")}
                         >
-                            <h2 className="text-xl font-semibold">Lost Tickets</h2>
-                            <p className="text-sm">Handle and resolve lost ticket cases.</p>
-                        </div>
-                        <div
-                            className="bg-teal-100 text-teal-800 p-4 rounded-lg shadow-md hover:bg-teal-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/insight")}
-                        >
-                            <h2 className="text-xl font-semibold">Insight</h2>
-                            <p className="text-sm">View analytics and insights for better decision-making.</p>
-                        </div>
-                        <div
-                            className="bg-gray-100 text-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/admin/notifications")}
-                        >
-                            <h2 className="text-xl font-semibold">Notifications</h2>
-                            <p className="text-sm">Manage and send notifications to users.</p>
+                            <div className="bg-purple-100 p-3 rounded-full mb-3">
+                                <HiCreditCard className="text-purple-500 text-xl" />
+                            </div>
+                            <h3 className="text-md font-semibold text-center">Subscriptions</h3>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white shadow-md rounded-lg p-6 mt-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Notifications</h2>
+                {/* Additional Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div
+                        className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-all cursor-pointer flex items-center"
+                        onClick={() => handleNavigation("/admin/insight")}
+                    >
+                        <div className="bg-indigo-100 p-3 rounded-full mr-4">
+                            <HiChartBar className="text-indigo-500 text-xl" />
+                        </div>
+                        <div>
+                            <h3 className="text-md font-semibold">View Insights</h3>
+                            <p className="text-sm text-gray-500">Check business analytics and reports</p>
+                        </div>
+                    </div>
+
+                    <div
+                        className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-all cursor-pointer flex items-center"
+                        onClick={() => handleNavigation("/admin/lost-tickets")}
+                    >
+                        <div className="bg-red-100 p-3 rounded-full mr-4">
+                            <HiExclamation className="text-red-500 text-xl" />
+                        </div>
+                        <div>
+                            <h3 className="text-md font-semibold">Lost Tickets</h3>
+                            <p className="text-sm text-gray-500">Manage and resolve ticket issues</p>
+                        </div>
+                    </div>
+
+                    <div
+                        className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-all cursor-pointer flex items-center"
+                        onClick={() => handleNavigation("/admin/config")}
+                    >
+                        <div className="bg-gray-100 p-3 rounded-full mr-4">
+                            <HiDocumentText className="text-gray-500 text-xl" />
+                        </div>
+                        <div>
+                            <h3 className="text-md font-semibold">System Config</h3>
+                            <p className="text-sm text-gray-500">Adjust fees and settings</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recent Notifications */}
+                <div className="bg-white shadow-md rounded-lg p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-800">Recent Notifications</h2>
+                        <button
+                            onClick={() => handleNavigation("/admin/notifications")}
+                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                            View All
+                        </button>
+                    </div>
+
                     {notifications.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-4">
                             {notifications.map((notification, index) => (
                                 <div
                                     key={index}
-                                    className="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition cursor-pointer"
+                                    className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition cursor-pointer flex items-start"
                                     onClick={() => router.push(`/admin/notifications/${notification.id}`)}
                                 >
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{notification.title}</h3>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        {notification.message.length > 30
-                                            ? `${notification.message.slice(0, 30)}...`
-                                            : notification.message}
-                                    </p>
-                                    <p className="text-xs text-gray-400">{new Date(notification.created_at).toLocaleDateString()} by {notification.username}</p>
+                                    <div className="bg-indigo-100 p-2 rounded-full mr-4">
+                                        <HiBell className="text-indigo-500 text-lg" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-md font-semibold text-gray-800">{notification.title}</h3>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            {notification.message.length > 60
+                                                ? `${notification.message.slice(0, 60)}...`
+                                                : notification.message}
+                                        </p>
+                                        <div className="flex mt-2 text-xs text-gray-400">
+                                            <span>{new Date(notification.created_at).toLocaleDateString()}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>{notification.username}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-gray-600">No recent notifications available.</p>
+                        <div className="flex flex-col items-center justify-center py-6 text-center">
+                            <div className="bg-gray-100 p-3 rounded-full mb-3">
+                                <HiBell className="text-gray-400 text-xl" />
+                            </div>
+                            <p className="text-gray-500">No recent notifications available.</p>
+                            <button
+                                onClick={() => handleNavigation("/admin/notifications")}
+                                className="mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                            >
+                                Create Notification
+                            </button>
+                        </div>
                     )}
                 </div>
             </main>
