@@ -5,6 +5,16 @@ export async function fetchHomePage() {
     return res.data.data;
 }
 
+export async function fetchMyLot() {
+    const res = await api.get("/employee/monitor");
+    return res.data.data;
+}
+
+export async function fetchMyParkingSessions() {
+    const res = await api.get("/employee/monitor/sessions");
+    return res.data.data;
+}
+
 // Get parking lots for the employee
 export async function fetchParkingLots() {
     const res = await api.get("/employee/parking-lots");

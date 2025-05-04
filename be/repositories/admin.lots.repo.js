@@ -16,7 +16,8 @@ exports.getAllParkingLots = async () => {
 exports.getParkingLotById = async (lotId) => {
     const query = `
         SELECT 
-            pl.*,
+            pl.lot_id, pl.lot_name, pl.car_capacity, pl.bike_capacity,
+            pl.current_car, pl.current_bike,
             u.username as manager_username
         FROM ParkingLots pl
         LEFT JOIN Users u ON pl.managed_by = u.user_id
@@ -25,6 +26,14 @@ exports.getParkingLotById = async (lotId) => {
     const result = await pool.query(query, [lotId]);
     return result.rows[0];
 };
+
+exports.getLotParkingSessions = async (lotId) => {
+    const query = `
+        SELECT * FROM ParkingSessions WHERE lot_id = $1 AND time_out IS NULL
+    `;
+    const result = await pool.query(query, [lotId]);
+    return result.rows;
+}
 
 exports.createParkingLot = async (parkingLotData) => {
     const {
