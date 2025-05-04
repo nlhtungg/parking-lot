@@ -1,24 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import PageHeader from "../../../components/admin/PageHeader";
-import { fetchParkingLotById, fetchLotParkingSessions } from "../../../api/admin.client";
+import { fetchMyLot, fetchMyParkingSessions } from "../../api/employee.client";
 
-async function fetchParkingLotData(id, setParkingLot, setError) {
+async function fetchLotData(setLot, setError) {
     try {
-        const lotData = await fetchParkingLotById(id);
-        setParkingLot(lotData);
+        const lotData = await fetchMyLot();
+        setLot(lotData);
     } catch (err) {
-        console.error("Error fetching parking lot details:", err);
-        setError("Failed to load parking lot details. Please try again later.");
+        console.error("Error fetching lot details:", err);
+        setError("Failed to load lot details. Please try again later.");
     }
 }
 
-async function fetchParkingSessions(id, setSessions, setError) {
+async function fetchSessions(setSessions, setError) {
     try {
-        const sessionData = await fetchLotParkingSessions(id);
+        const sessionData = await fetchMyParkingSessions();
         setSessions(sessionData);
     } catch (err) {
         console.error("Error fetching parking sessions:", err);
@@ -26,9 +24,8 @@ async function fetchParkingSessions(id, setSessions, setError) {
     }
 }
 
-export default function ParkingLotDetailPage() {
-    const { id } = useParams();
-    const [parkingLot, setParkingLot] = useState(null);
+export default function LotMonitorPage() {
+    const [lot, setLot] = useState(null);
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -39,40 +36,32 @@ export default function ParkingLotDetailPage() {
             setError(null); // Reset error state before fetching
 
             await Promise.all([
-                fetchParkingLotData(id, setParkingLot, setError),
-                fetchParkingSessions(id, setSessions, setError),
+                fetchLotData(setLot, setError),
+                fetchSessions(setSessions, setError),
             ]);
 
             setLoading(false);
         }
 
         fetchData();
-    }, [id]);
+    }, []);
 
     if (loading) return <p className="text-center text-gray-500">Loading...</p>;
     if (error) return <p className="text-center text-red-500">{error}</p>;
 
-    if (!parkingLot) {
-        return <p className="text-center text-gray-500">Parking lot not found.</p>;
+    if (!lot) {
+        return <p className="text-center text-gray-500">Lot not found.</p>;
     }
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
-            
-            <Link href="/admin/parking-lots">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded mb-4">Go Back</button>
-            </Link>
-
-            <PageHeader title={`Parking Lot: ${parkingLot.lot_name}`} onBack={() => window.history.back()} />
-
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 className="text-lg font-semibold mb-4">Parking Lot Details</h2>
+                <h2 className="text-lg font-semibold mb-4">{lot.lot_name}</h2>
                 <div className="grid grid-cols-2 gap-4">
-                    <p><strong>Car Capacity:</strong> {parkingLot.car_capacity}</p>
-                    <p><strong>Bike Capacity:</strong> {parkingLot.bike_capacity}</p>
-                    <p><strong>Current Cars:</strong> {parkingLot.current_car}</p>
-                    <p><strong>Current Bikes:</strong> {parkingLot.current_bike}</p>
-                    <p><strong>Manager:</strong> {parkingLot.manager_username || "Unassigned"}</p>
+                    <p><strong>Car Capacity:</strong> {lot.car_capacity}</p>
+                    <p><strong>Bike Capacity:</strong> {lot.bike_capacity}</p>
+                    <p><strong>Current Cars:</strong> {lot.current_car}</p>
+                    <p><strong>Current Bikes:</strong> {lot.current_bike}</p>
                 </div>
             </div>
 
