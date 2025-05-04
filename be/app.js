@@ -22,8 +22,10 @@ connectDB();
 // Middleware
 app.use(
     cors({
-        origin: process.env.CLIENT_URL,
+        origin: ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"],
         credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
 app.use(express.json());
@@ -31,16 +33,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Session configuration
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        //secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 8 * 60 * 60 * 1000 + (7 * 60 * 60 * 1000) // 8 hours + (GMT+7)
-    }
-}));
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            //secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: 8 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000, // 8 hours + (GMT+7)
+        },
+    })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
