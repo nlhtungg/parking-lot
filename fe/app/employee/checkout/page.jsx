@@ -17,10 +17,11 @@ export default function CheckOutPage() {
     const [paymentMethod, setPaymentMethod] = useState("CASH");
     const [isLostTicket, setIsLostTicket] = useState(false);
     const [manualSessionId, setManualSessionId] = useState("");
+    const [lastRefreshed, setLastRefreshed] = useState(Date.now());
 
     useEffect(() => {
         loadActiveSessions();
-    }, []);
+    }, [lastRefreshed]); // Re-run when lastRefreshed changes
 
     const loadActiveSessions = async () => {
         setLoading(true);
@@ -37,6 +38,11 @@ export default function CheckOutPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Function to force a refresh of the sessions data
+    const refreshSessions = () => {
+        setLastRefreshed(Date.now());
     };
 
     const handleTicketLookup = async (e) => {
@@ -112,7 +118,23 @@ export default function CheckOutPage() {
         setPaymentDetails(null);
         setIsLostTicket(false);
         setManualSessionId("");
+        refreshSessions(); // Refresh the sessions data when returning to the main screen
     };
+
+    // Refresh on page visibility change (when user navigates back to this page)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && checkoutStage === 0) {
+                refreshSessions();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [checkoutStage]);
 
     const formatDateTime = (dateStr) => {
         if (!dateStr) return "N/A";
@@ -135,7 +157,19 @@ export default function CheckOutPage() {
             {checkoutStage === 0 && (
                 <>
                     <div className="bg-white shadow-md rounded-lg p-6 mt-6">
-                        <h2 className="text-xl font-semibold mb-4">Scan or Enter Ticket ID</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">Scan or Enter Ticket ID</h2>
+                            <button
+                                onClick={refreshSessions}
+                                disabled={loading}
+                                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
                         <form onSubmit={handleTicketLookup} className="mb-6">
                             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                                 <div className="flex-grow">

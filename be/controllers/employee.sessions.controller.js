@@ -135,10 +135,11 @@ exports.initiateCheckout = async (req, res) => {
             });
         }
         
-        // Calculate parking duration and fee
+        // Calculate parking duration and fee - using Math.ceil for rounding up
         const currentTime = new Date();
         const checkInTime = new Date(session.time_in);
-        const hours = calculateHoursDifference(checkInTime, currentTime);
+        // Round up to the next hour for better UX and simpler calculations
+        const hours = Math.ceil(calculateHoursDifference(checkInTime, currentTime));
         
         let totalAmount = 0;
         let sub_id = null;
@@ -191,7 +192,7 @@ exports.initiateCheckout = async (req, res) => {
                 vehicle_type: session.vehicle_type,
                 time_in: session.time_in,
                 is_monthly: session.is_monthly,
-                duration_hours: hours.toFixed(2)
+                duration_hours: hours // Sending an integer now, not a float with decimal places
             }
         });
     } catch (error) {
@@ -298,8 +299,8 @@ exports.getActiveSessions = async (req, res) => {
         res.status(200).json({
             success: true,
             data: {
-                lot_id: lotInfo.lot_id,
-                lot_name: lotInfo.lot_name,
+                lot_id: parkingLot.lot_id,
+                lot_name: parkingLot.lot_name,
                 sessions: activeSessions
             }
         });
