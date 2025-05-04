@@ -41,6 +41,31 @@ exports.getParkingLotById = async (req, res) => {
     }
 };
 
+exports.getLotParkingSessions = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const parkingSessions = await lotsRepo.getLotParkingSessions(id);
+
+        if (!parkingSessions) {
+            return res.status(404).json({
+                success: false,
+                message: 'Parking lot not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: parkingSessions
+        });
+    } catch (error) {
+        console.error('Get parking sessions error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
+
 exports.createParkingLot = async (req, res) => {
     try {
         const { lot_name, car_capacity, bike_capacity } = req.body;

@@ -25,6 +25,18 @@ export async function deleteParkingLot(id) {
     return res.data.data;
 }
 
+// Fetch a parking lot by ID
+export async function fetchParkingLotById(id) {
+    const res = await api.get(`/admin/parking-lots/${id}`);
+    return res.data.data;
+}
+
+// Fetch parking sessions for a lot
+export async function fetchLotParkingSessions(lotId) {
+    const res = await api.get(`/admin/parking-lots/${lotId}/sessions`);
+    return res.data.data;
+}
+
 // ===================== USERS =====================
 // Fetch all users
 export async function fetchAllUsers() {

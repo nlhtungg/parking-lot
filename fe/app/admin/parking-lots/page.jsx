@@ -26,6 +26,7 @@ export default function ParkingLotsPage() {
         handleSubmit,
         handleEditSubmit,
         handleEdit,
+        handleDetail,
         handleDelete,
     } = useParkingLots();
 
@@ -38,6 +39,7 @@ export default function ParkingLotsPage() {
                 data={lots}
                 loading={loading}
                 onEdit={handleEdit}
+                onDetail={handleDetail}
                 onDelete={handleDelete}
                 idField="lot_id"
             />

@@ -132,6 +132,11 @@ export function useParkingLots() {
         }
     };
 
+    // Handle detail
+    const handleDetail = (lotId) => {
+        window.location.href = `/admin/parking-lots/${lotId}`;
+    };
+
     // Handle delete
     const handleDelete = async (lotId) => {
         if (!confirm("Are you sure you want to delete this parking lot?")) return;
@@ -177,6 +182,7 @@ export function useParkingLots() {
         handleSubmit,
         handleEditSubmit,
         handleEdit,
+        handleDetail,
         handleDelete,
     };
 }

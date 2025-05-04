@@ -28,6 +28,7 @@ router.get('/employees/available', adminUsersController.getAvailableEmployees);
 // Parking Lots Management
 router.get('/parking-lots', adminLotsController.getAllParkingLots);
 router.get('/parking-lots/:id', adminLotsController.getParkingLotById);
+router.get('/parking-lots/:id/sessions', adminLotsController.getLotParkingSessions);
 router.post('/parking-lots', adminLotsController.createParkingLot);
 router.put('/parking-lots/:id', adminLotsController.updateParkingLot);
 router.delete('/parking-lots/:id', adminLotsController.deleteParkingLot);
