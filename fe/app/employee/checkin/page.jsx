@@ -5,6 +5,7 @@ import { checkInVehicle, fetchActiveSessions } from "../../api/employee.client";
 import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
+import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
 
 export default function CheckInPage() {
     const toast = useToast();
@@ -53,16 +54,19 @@ export default function CheckInPage() {
         setLoading(true);
         setTicket(null);
 
+
         try {
             const response = await checkInVehicle({
                 ...form,
                 lot_id: lotInfo.lot_id,
             });
 
+
             if (response.success) {
                 toast.success("Vehicle checked in successfully");
                 setForm({
                     ...form,
+                    license_plate: "",
                     license_plate: "",
                 });
                 setTicket(response.ticket);
@@ -226,10 +230,70 @@ export default function CheckInPage() {
                 </div>
             </div>
 
+
             {ticket && (
                 <div className="mt-8 bg-white border border-green-200 rounded-lg overflow-hidden shadow-md">
                     <div className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
+                <div className="mt-8 bg-white border border-green-200 rounded-lg overflow-hidden shadow-md">
+                    <div className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
                         <div>
+                            <h3 className="text-xl font-semibold">Parking Ticket Generated</h3>
+                            <p className="text-green-100 text-sm">Ticket created successfully</p>
+                        </div>
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center px-4 py-2 bg-white text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-white"
+                        >
+                            <FaPrint className="mr-2" />
+                            Print
+                        </button>
+                    </div>
+
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaQrcode className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Ticket ID</p>
+                                    <p className="font-semibold">{ticket.session_id}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaCar className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">License Plate</p>
+                                    <p className="font-semibold">{ticket.license_plate}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    {ticket.vehicle_type === "car" ? (
+                                        <FaCar className="h-5 w-5 text-green-600" />
+                                    ) : (
+                                        <FaMotorcycle className="h-5 w-5 text-green-600" />
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Vehicle Type</p>
+                                    <p className="font-semibold capitalize">{ticket.vehicle_type}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaRegClock className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Check-in Time</p>
+                                    <p className="font-semibold">{formatDateTime(ticket.time_in)}</p>
+                                </div>
+                            </div>
                             <h3 className="text-xl font-semibold">Parking Ticket Generated</h3>
                             <p className="text-green-100 text-sm">Ticket created successfully</p>
                         </div>
@@ -292,7 +356,18 @@ export default function CheckInPage() {
                         <div className="mt-6 p-4 bg-gray-50 rounded-md">
                             <p className="text-sm text-gray-500 mb-2">QR Code</p>
                             <p className="font-mono text-xs bg-white p-3 rounded border border-gray-200">
+
+                        <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                            <p className="text-sm text-gray-500 mb-2">QR Code</p>
+                            <p className="font-mono text-xs bg-white p-3 rounded border border-gray-200">
                                 {ticket.qr_code}
+                            </p>
+                        </div>
+
+                        <div className="mt-4 p-4 bg-green-50 rounded-md text-green-800 text-sm">
+                            <p>
+                                This ticket has been successfully created and the vehicle has been checked in. Please
+                                provide the printed ticket to the customer.
                             </p>
                         </div>
 
@@ -308,3 +383,4 @@ export default function CheckInPage() {
         </div>
     );
 }
+
