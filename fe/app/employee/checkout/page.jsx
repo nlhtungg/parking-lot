@@ -11,6 +11,12 @@ import ActiveSessions from "../../components/employee/checkout/ActiveSessions";
 import PaymentDetails from "../../components/employee/checkout/PaymentDetails";
 import SuccessScreen from "../../components/employee/checkout/SuccessScreen";
 
+// Import our new components
+import TicketLookup from "../../components/employee/checkout/TicketLookup";
+import ActiveSessions from "../../components/employee/checkout/ActiveSessions";
+import PaymentDetails from "../../components/employee/checkout/PaymentDetails";
+import SuccessScreen from "../../components/employee/checkout/SuccessScreen";
+
 export default function CheckOutPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(true);
@@ -37,8 +43,10 @@ export default function CheckOutPage() {
             setLotInfo({
                 lot_id: data.lot_id,
                 lot_name: data.lot_name,
+                lot_name: data.lot_name,
             });
         } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to load sessions");
             toast.error(error.response?.data?.message || "Failed to load sessions");
         } finally {
             setLoading(false);
@@ -75,6 +83,7 @@ export default function CheckOutPage() {
             setCurrentSession(result.session_details);
             setCheckoutStage(1);
 
+
             toast.success("Checkout initiated");
         } catch (error) {
             console.error("Checkout initiation error:", error);
@@ -100,7 +109,10 @@ export default function CheckOutPage() {
             setPaymentDetails(result.payment);
             setCheckoutStage(2);
 
+
             // Remove the session from active sessions if it's in the list
+            setActiveSessions(activeSessions.filter((session) => session.session_id !== currentSession?.session_id));
+
             setActiveSessions(activeSessions.filter((session) => session.session_id !== currentSession?.session_id));
 
             toast.success("Payment confirmed and vehicle checked out");
@@ -126,13 +138,17 @@ export default function CheckOutPage() {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === "visible" && checkoutStage === 0) {
+            if (document.visibilityState === "visible" && checkoutStage === 0) {
                 refreshSessions();
             }
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
         return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     }, [checkoutStage]);
@@ -148,12 +164,17 @@ export default function CheckOutPage() {
             style: "currency",
             currency: "VND",
             minimumFractionDigits: 0,
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "VND",
+            minimumFractionDigits: 0,
         }).format(amount);
     };
 
     return (
         <div className="container mx-auto p-6">
             <PageHeader title="Check-Out Vehicle" />
+
 
             {checkoutStage === 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
@@ -178,9 +199,33 @@ export default function CheckOutPage() {
                             processingId={processingId}
                             formatDateTime={formatDateTime}
                         />
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+                    <div className="lg:col-span-1">
+                        <TicketLookup
+                            manualSessionId={manualSessionId}
+                            setManualSessionId={setManualSessionId}
+                            isLostTicket={isLostTicket}
+                            setIsLostTicket={setIsLostTicket}
+                            loading={loading}
+                            lotInfo={lotInfo}
+                            refreshSessions={refreshSessions}
+                            handleTicketLookup={handleTicketLookup}
+                        />
+                    </div>
+
+                    <div className="lg:col-span-3">
+                        <ActiveSessions
+                            activeSessions={activeSessions}
+                            loading={loading}
+                            handleInitiateCheckout={handleInitiateCheckout}
+                            processingId={processingId}
+                            formatDateTime={formatDateTime}
+                        />
                     </div>
                 </div>
+                </div>
             )}
+
 
             {checkoutStage === 1 && currentSession && paymentDetails && (
                 <PaymentDetails
@@ -195,9 +240,29 @@ export default function CheckOutPage() {
                     formatDateTime={formatDateTime}
                     formatCurrency={formatCurrency}
                 />
+                <PaymentDetails
+                    currentSession={currentSession}
+                    paymentDetails={paymentDetails}
+                    isLostTicket={isLostTicket}
+                    paymentMethod={paymentMethod}
+                    setPaymentMethod={setPaymentMethod}
+                    loading={loading}
+                    resetCheckout={resetCheckout}
+                    handleConfirmPayment={handleConfirmPayment}
+                    formatDateTime={formatDateTime}
+                    formatCurrency={formatCurrency}
+                />
             )}
 
+
             {checkoutStage === 2 && (
+                <SuccessScreen
+                    currentSession={currentSession}
+                    paymentDetails={paymentDetails}
+                    paymentMethod={paymentMethod}
+                    resetCheckout={resetCheckout}
+                    formatCurrency={formatCurrency}
+                />
                 <SuccessScreen
                     currentSession={currentSession}
                     paymentDetails={paymentDetails}
@@ -209,3 +274,4 @@ export default function CheckOutPage() {
         </div>
     );
 }
+
