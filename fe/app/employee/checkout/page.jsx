@@ -15,7 +15,7 @@ export default function CheckOutPage() {
     const [currentSession, setCurrentSession] = useState(null);
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState("CASH");
-    const [isLostTicket, setIsLostTicket] = useState(false);
+    const [isLostTicket, setIsLostTicket] = useState(false); // We keep this state but hide the control
     const [manualSessionId, setManualSessionId] = useState("");
     const [lastRefreshed, setLastRefreshed] = useState(Date.now());
 
@@ -82,19 +82,21 @@ export default function CheckOutPage() {
     };
 
     const handleConfirmPayment = async () => {
-        if (!paymentDetails || !paymentDetails.payment_id) {
-            toast.error("No payment to confirm");
+        if (!paymentDetails || !currentSession) {
+            toast.error("No checkout session to confirm");
             return;
         }
 
         setLoading(true);
         try {
             const result = await confirmCheckout(
-                paymentDetails.payment_id, 
+                currentSession.session_id, 
                 paymentMethod,
                 isLostTicket
             );
             
+            // Update payment details with the actual confirmed payment
+            setPaymentDetails(result.payment);
             setCheckoutStage(2);
             
             // Remove the session from active sessions if it's in the list
@@ -180,18 +182,6 @@ export default function CheckOutPage() {
                                         placeholder="Enter ticket ID or scan barcode"
                                         className="w-full p-2 border border-gray-300 rounded-md"
                                     />
-                                </div>
-                                <div>
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id="lost-ticket"
-                                            checked={isLostTicket}
-                                            onChange={(e) => setIsLostTicket(e.target.checked)}
-                                            className="mr-2"
-                                        />
-                                        <label htmlFor="lost-ticket">Lost Ticket</label>
-                                    </div>
                                 </div>
                                 <button
                                     type="submit"
@@ -280,11 +270,7 @@ export default function CheckOutPage() {
                             <p className="text-sm text-gray-600">Monthly Pass:</p>
                             <p className="font-medium">{currentSession.is_monthly ? "Yes" : "No"}</p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Lost Ticket:</p>
-                            <p className="font-medium">{isLostTicket ? "Yes (penalty applied)" : "No"}</p>
-                        </div>
-                        <div>
+                        <div className="md:col-span-2">
                             <p className="text-sm font-medium text-gray-600">Payment Amount:</p>
                             <p className="text-xl font-bold text-green-600">
                                 {formatCurrency(paymentDetails.amount)}

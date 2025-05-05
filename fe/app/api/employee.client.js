@@ -23,19 +23,16 @@ export async function checkInVehicle(sessionData) {
     return res.data;
 }
 
-// Initiate check-out process (Exit Stage 1)
-export async function initiateCheckout(sessionId, isLost = false) {
-    const res = await api.post("/employee/parking/exit", {
-        session_id: sessionId,
-        is_lost: isLost
-    });
+// Initiate check-out process (Exit Stage 1) - Just gets preliminary information, no DB updates
+export async function initiateCheckout(sessionId) {
+    const res = await api.get(`/employee/parking/exit/${sessionId}`);
     return res.data;
 }
 
-// Confirm payment and complete check-out (Exit Stage 2)
-export async function confirmCheckout(paymentId, paymentMethod, isLost = false) {
+// Confirm payment and complete check-out (Exit Stage 2) - Creates payment record and updates session
+export async function confirmCheckout(sessionId, paymentMethod, isLost = false) {
     const res = await api.post("/employee/parking/exit/confirm", {
-        payment_id: paymentId,
+        session_id: sessionId,
         payment_method: paymentMethod,
         is_lost: isLost
     });
