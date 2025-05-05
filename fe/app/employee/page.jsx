@@ -4,23 +4,14 @@
 import { useRouter } from "next/navigation";
 import api from "../api/client.config";
 import { useEffect, useState } from "react";
+import { useUser } from "../components/providers/UserProvider";
 
 export default function EmployeePage() {
-    const [userName, setUserName] = useState("");
+    const { user } = useUser();
     const [notifications, setNotifications] = useState([]);
     const router = useRouter();
 
     useEffect(() => {
-        // Fetch user data from backend server with credentials
-        const fetchUserData = async () => {
-            try {
-                const response = await api.get("/employee/");
-                setUserName(response.data.data.user.full_name);
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            }
-        };
-
         const fetchNotifications = async () => {
             try {
                 const response = await api.get("/employee/notifications");
@@ -30,7 +21,6 @@ export default function EmployeePage() {
             }
         };
 
-        fetchUserData();
         fetchNotifications();
     }, []);
 
@@ -50,7 +40,7 @@ export default function EmployeePage() {
         <div className="flex min-h-screen bg-gray-50">
             <main className="flex-1 p-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome, {userName}</h1>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome, {user?.full_name}</h1>
                     <blockquote className="italic text-gray-500 border-l-4 border-gray-300 pl-4 mb-6">
                         "The only way to do great work is to love what you do." – Steve Jobs
                     </blockquote>
@@ -115,9 +105,7 @@ export default function EmployeePage() {
                                 <div
                                     key={index}
                                     className="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition cursor-pointer"
-                                    onClick={() =>
-                                        router.push(`/employee/notifications/${notification.noti_id}`)
-                                    }
+                                    onClick={() => router.push(`/employee/notifications/${notification.noti_id}`)}
                                 >
                                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{notification.title}</h3>
                                     <p className="text-sm text-gray-600 mb-2">
@@ -126,7 +114,8 @@ export default function EmployeePage() {
                                             : notification.message}
                                     </p>
                                     <p className="text-xs text-gray-400">
-                                        {new Date(notification.created_at).toLocaleDateString()} by {notification.username}
+                                        {new Date(notification.created_at).toLocaleDateString()} by{" "}
+                                        {notification.username}
                                     </p>
                                 </div>
                             ))}

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { HiMenuAlt3, HiX } from "react-icons/hi";
 
 const Header = () => {
     const pathname = usePathname();
@@ -29,13 +29,11 @@ const Header = () => {
                     </div>
                     {/* Mobile Menu Button */}
                     <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                        <Image
-                            src={isMenuOpen ? "/icons/close.svg" : "/icons/menu.svg"}
-                            alt={isMenuOpen ? "Close menu" : "Open menu"}
-                            width={24}
-                            height={24}
-                            className="text-gray-600"
-                        />
+                        {isMenuOpen ? (
+                            <HiX className="w-6 h-6 text-gray-600" />
+                        ) : (
+                            <HiMenuAlt3 className="w-6 h-6 text-gray-600" />
+                        )}
                     </button>
                 </div>
 
