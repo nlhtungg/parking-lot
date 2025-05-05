@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { checkInVehicle, fetchParkingLots } from "../../api/employee.client";
+import { checkInVehicle, fetchActiveSessions } from "../../api/employee.client";
 import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
@@ -9,30 +9,33 @@ import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/
 export default function CheckInPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
-    const [parkingLots, setParkingLots] = useState([]);
-    const [selectedLotId, setSelectedLotId] = useState("");
+    const [lotInfo, setLotInfo] = useState(null);
     const [ticket, setTicket] = useState(null);
     const [form, setForm] = useState({
         license_plate: "",
         vehicle_type: "car",
     });
 
-    // Fetch parking lots on component mount
+    // Fetch current employee's assigned parking lot on component mount
     useEffect(() => {
-        async function loadParkingLots() {
+        async function loadAssignedLot() {
             try {
-                const data = await fetchParkingLots();
-                setParkingLots(data || []);
-                if (data && data.length > 0) {
-                    setSelectedLotId(data[0].lot_id);
+                const data = await fetchActiveSessions();
+                if (data && data.lot_id) {
+                    setLotInfo({
+                        lot_id: data.lot_id,
+                        lot_name: data.lot_name,
+                    });
+                } else {
+                    toast.error("You don't have an assigned parking lot");
                 }
             } catch (error) {
-                console.error("Error fetching parking lots:", error);
-                toast.error("Failed to load parking lots");
+                console.error("Error fetching assigned lot:", error);
+                toast.error("Failed to load your assigned parking lot");
             }
         }
 
-        loadParkingLots();
+        loadAssignedLot();
     }, []);
 
     const handleChange = (e) => {
@@ -41,13 +44,19 @@ export default function CheckInPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!lotInfo || !lotInfo.lot_id) {
+            toast.error("You need an assigned parking lot to check in vehicles");
+            return;
+        }
+
         setLoading(true);
         setTicket(null);
 
         try {
             const response = await checkInVehicle({
                 ...form,
-                lot_id: selectedLotId || parkingLots[0]?.lot_id,
+                lot_id: lotInfo.lot_id,
             });
 
             if (response.success) {
@@ -169,21 +178,12 @@ export default function CheckInPage() {
                                     </div>
                                 </div>
 
-                                {parkingLots.length > 1 && (
+                                {lotInfo && (
                                     <div>
-                                        <label className="block text-gray-700 font-medium mb-2">Parking Lot *</label>
-                                        <select
-                                            value={selectedLotId}
-                                            onChange={(e) => setSelectedLotId(e.target.value)}
-                                            required
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            {parkingLots.map((lot) => (
-                                                <option key={lot.lot_id} value={lot.lot_id}>
-                                                    {lot.lot_name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <label className="block text-gray-700 font-medium mb-2">Parking Lot</label>
+                                        <div className="p-3 border border-gray-300 rounded-md bg-gray-50">
+                                            {lotInfo.lot_name}
+                                        </div>
                                     </div>
                                 )}
                             </div>

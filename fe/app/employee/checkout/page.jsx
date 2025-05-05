@@ -21,7 +21,7 @@ export default function CheckOutPage() {
     const [currentSession, setCurrentSession] = useState(null);
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState("CASH");
-    const [isLostTicket, setIsLostTicket] = useState(false);
+    const [isLostTicket, setIsLostTicket] = useState(false); // We keep this state but hide the control
     const [manualSessionId, setManualSessionId] = useState("");
     const [lastRefreshed, setLastRefreshed] = useState(Date.now());
 
@@ -87,15 +87,17 @@ export default function CheckOutPage() {
     };
 
     const handleConfirmPayment = async () => {
-        if (!paymentDetails || !paymentDetails.payment_id) {
-            toast.error("No payment to confirm");
+        if (!paymentDetails || !currentSession) {
+            toast.error("No checkout session to confirm");
             return;
         }
 
         setLoading(true);
         try {
-            const result = await confirmCheckout(paymentDetails.payment_id, paymentMethod, isLostTicket);
+            const result = await confirmCheckout(currentSession.session_id, paymentMethod, isLostTicket);
 
+            // Update payment details with the actual confirmed payment
+            setPaymentDetails(result.payment);
             setCheckoutStage(2);
 
             // Remove the session from active sessions if it's in the list
