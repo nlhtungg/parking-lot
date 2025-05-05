@@ -8,13 +8,13 @@ const { getToday, calculateHoursDifference } = require('../utils/date');
 exports.checkInVehicle = async (req, res) => {
     try {
         const { 
-            lot_id, 
             license_plate, 
-            vehicle_type
+            vehicle_type,
+            lot_id  // We still accept this but will verify against employee's assigned lot
         } = req.body;
         
         // Validate required fields
-        if (!lot_id || !license_plate || !vehicle_type) {
+        if (!license_plate || !vehicle_type) {
             return res.status(422).json({
                 success: false,
                 message: 'Missing required fields'
@@ -30,12 +30,35 @@ exports.checkInVehicle = async (req, res) => {
             });
         }
         
-        // Get parking lot info and check capacity
-        const parkingLot = await lotsRepo.getParkingLotById(lot_id);
+        // Get the parking lot managed by this employee
+        const userId = req.session.user.user_id;
+        const assignedLot = await lotsRepo.getParkingLotByManager(userId);
+        
+        // Check if the employee is assigned to any lot
+        let parkingLot;
+        let isAssignedLot = true;
+        
+        if (assignedLot) {
+            // Use the employee's assigned lot regardless of what was provided
+            parkingLot = assignedLot;
+        } else {
+            // Employee is not assigned to any lot - try to find any lot
+            isAssignedLot = false;
+            const allLots = await lotsRepo.getAllParkingLots();
+            if (allLots && allLots.length > 0) {
+                parkingLot = allLots[0];
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No parking lots available'
+                });
+            }
+        }
+        
         if (!parkingLot) {
             return res.status(404).json({
                 success: false,
-                message: 'Parking lot not found'
+                message: 'No parking lot found for the employee'
             });
         }
         
@@ -55,7 +78,7 @@ exports.checkInVehicle = async (req, res) => {
         }
         
         // Check if there's an active session for this license plate
-        const activeSessions = await sessionsRepo.getActiveSessionsByLot(lot_id);
+        const activeSessions = await sessionsRepo.getActiveSessionsByLot(parkingLot.lot_id);
         const hasActiveSession = activeSessions.some(
             session => session.license_plate === license_plate
         );
@@ -72,9 +95,9 @@ exports.checkInVehicle = async (req, res) => {
         const monthlyPass = await sessionsRepo.checkMonthlySub(license_plate, today);
         const is_monthly = !!monthlyPass;
         
-        // Create new session
+        // Create new session with the employee's assigned lot
         const newSession = await sessionsRepo.startSession({
-            lot_id,
+            lot_id: parkingLot.lot_id,
             license_plate,
             vehicle_type,
             is_monthly
@@ -89,6 +112,7 @@ exports.checkInVehicle = async (req, res) => {
             time_in: newSession.time_in,
             is_monthly: newSession.is_monthly,
             lot_id: newSession.lot_id,
+            lot_name: parkingLot.lot_name,
             qr_code: `PK-${newSession.session_id}-${Date.now()}` // Simplified QR code data
         };
         
@@ -106,10 +130,10 @@ exports.checkInVehicle = async (req, res) => {
     }
 };
 
-// Vehicle Exit - Stage 1: Create a pending payment
+// Vehicle Exit - Stage 1: Get session info for checkout (READ-ONLY)
 exports.initiateCheckout = async (req, res) => {
     try {
-        const { session_id } = req.body;
+        const session_id = req.params.session_id;
         
         if (!session_id) {
             return res.status(422).json({
@@ -142,6 +166,91 @@ exports.initiateCheckout = async (req, res) => {
         const hours = Math.ceil(calculateHoursDifference(checkInTime, currentTime));
         
         let totalAmount = 0;
+        
+        // Check if is_monthly is true from the session
+        if (session.is_monthly) {
+            // No charge for monthly subscribers
+            totalAmount = 0;
+        } else {
+            // Get fee configuration
+            const serviceFee = parseFloat(session.service_fee);
+            
+            // Calculate payment based on hours
+            if (hours <= 1) {
+                totalAmount = serviceFee;
+            } else {
+                // First hour at standard rate, additional hours with incremental fee
+                totalAmount = serviceFee + ((hours - 1) * (serviceFee * 0.5));
+            }
+        }
+        
+        // Don't create a pending payment yet - just return the calculated info
+        res.status(200).json({
+            success: true,
+            message: 'Checkout information retrieved',
+            amount: totalAmount,
+            session_details: {
+                session_id: session.session_id,
+                license_plate: session.license_plate,
+                vehicle_type: session.vehicle_type,
+                time_in: session.time_in,
+                is_monthly: session.is_monthly,
+                duration_hours: hours
+            }
+        });
+    } catch (error) {
+        console.error('Initiate checkout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Vehicle Exit - Stage 2: Confirm payment and complete checkout
+exports.confirmCheckout = async (req, res) => {
+    try {
+        const { session_id, payment_method, is_lost } = req.body;
+        
+        if (!session_id || !payment_method) {
+            return res.status(422).json({
+                success: false,
+                message: 'Session ID and payment method are required'
+            });
+        }
+        
+        // Valid payment methods
+        const validPaymentMethods = ['CASH', 'CARD'];
+        if (!validPaymentMethods.includes(payment_method)) {
+            return res.status(422).json({
+                success: false,
+                message: 'Invalid payment method'
+            });
+        }
+        
+        // Get session information
+        const session = await sessionsRepo.getSession(session_id);
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Parking session not found'
+            });
+        }
+        
+        // Check if session is already completed
+        if (session.time_out) {
+            return res.status(400).json({
+                success: false,
+                message: 'This parking session is already completed'
+            });
+        }
+        
+        // Calculate parking duration and fee
+        const currentTime = new Date();
+        const checkInTime = new Date(session.time_in);
+        const hours = Math.ceil(calculateHoursDifference(checkInTime, currentTime));
+        
+        let totalAmount = 0;
         let sub_id = null;
         
         // Check if is_monthly is true from the session
@@ -168,90 +277,17 @@ exports.initiateCheckout = async (req, res) => {
             }
             
             // Apply lost ticket penalty if applicable
-            const is_lost = req.body.is_lost || false;
             if (is_lost && session.penalty_fee) {
                 totalAmount += parseFloat(session.penalty_fee);
             }
         }
         
-        // Create a pending payment
-        const payment = await sessionsRepo.createPendingPayment({
+        // NOW create the payment record and update the session in one transaction
+        const { payment, session: updatedSession } = await sessionsRepo.createAndConfirmPayment({
             session_id,
             sub_id,
-            total_amount: totalAmount
-        });
-        
-        res.status(200).json({
-            success: true,
-            message: 'Checkout initiated',
-            payment_id: payment.payment_id,
-            amount: payment.total_amount,
-            status: 'PENDING',
-            session_details: {
-                license_plate: session.license_plate,
-                vehicle_type: session.vehicle_type,
-                time_in: session.time_in,
-                is_monthly: session.is_monthly,
-                duration_hours: hours // Sending an integer now, not a float with decimal places
-            }
-        });
-    } catch (error) {
-        console.error('Initiate checkout error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
-    }
-};
-
-// Vehicle Exit - Stage 2: Confirm payment and complete checkout
-exports.confirmCheckout = async (req, res) => {
-    try {
-        const { payment_id, payment_method, is_lost } = req.body;
-        
-        if (!payment_id || !payment_method) {
-            return res.status(422).json({
-                success: false,
-                message: 'Payment ID and payment method are required'
-            });
-        }
-        
-        // Valid payment methods
-        const validPaymentMethods = ['CASH', 'CARD'];
-        if (!validPaymentMethods.includes(payment_method)) {
-            return res.status(422).json({
-                success: false,
-                message: 'Invalid payment method'
-            });
-        }
-        
-        // Get the payment to find the session_id
-        const query = `
-            SELECT * FROM Payment
-            WHERE payment_id = $1
-        `;
-        const result = await pool.query(query, [payment_id]);
-        const payment = result.rows[0];
-        
-        if (!payment) {
-            return res.status(404).json({
-                success: false,
-                message: 'Payment not found'
-            });
-        }
-        
-        if (payment.payment_method !== 'PENDING') {
-            return res.status(400).json({
-                success: false,
-                message: 'This payment has already been processed'
-            });
-        }
-        
-        // Confirm the payment and complete checkout
-        const { payment: updatedPayment, session: updatedSession } = await sessionsRepo.confirmPayment({
-            payment_id,
+            total_amount: totalAmount,
             payment_method,
-            session_id: payment.session_id,
             is_lost: is_lost || false
         });
         
@@ -259,11 +295,11 @@ exports.confirmCheckout = async (req, res) => {
             success: true,
             message: 'Checkout completed successfully',
             payment: {
-                payment_id: updatedPayment.payment_id,
-                session_id: updatedPayment.session_id,
-                amount: updatedPayment.total_amount,
-                method: updatedPayment.payment_method,
-                paid_at: updatedPayment.payment_date
+                payment_id: payment.payment_id,
+                session_id: payment.session_id,
+                amount: payment.total_amount,
+                method: payment.payment_method,
+                paid_at: payment.payment_date
             },
             session: {
                 session_id: updatedSession.session_id,

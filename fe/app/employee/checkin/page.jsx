@@ -1,38 +1,42 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { checkInVehicle, fetchParkingLots } from "../../api/employee.client";
+import { checkInVehicle, fetchActiveSessions } from "../../api/employee.client";
 import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
+import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
 
 export default function CheckInPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
-    const [parkingLots, setParkingLots] = useState([]);
-    const [selectedLotId, setSelectedLotId] = useState("");
+    const [lotInfo, setLotInfo] = useState(null);
     const [ticket, setTicket] = useState(null);
     const [form, setForm] = useState({
         license_plate: "",
         vehicle_type: "car",
     });
 
-    // Fetch parking lots on component mount
+    // Fetch current employee's assigned parking lot on component mount
     useEffect(() => {
-        async function loadParkingLots() {
+        async function loadAssignedLot() {
             try {
-                const data = await fetchParkingLots();
-                setParkingLots(data || []);
-                if (data && data.length > 0) {
-                    setSelectedLotId(data[0].lot_id);
+                const data = await fetchActiveSessions();
+                if (data && data.lot_id) {
+                    setLotInfo({
+                        lot_id: data.lot_id,
+                        lot_name: data.lot_name,
+                    });
+                } else {
+                    toast.error("You don't have an assigned parking lot");
                 }
             } catch (error) {
-                console.error("Error fetching parking lots:", error);
-                toast.error("Failed to load parking lots");
+                console.error("Error fetching assigned lot:", error);
+                toast.error("Failed to load your assigned parking lot");
             }
         }
 
-        loadParkingLots();
+        loadAssignedLot();
     }, []);
 
     const handleChange = (e) => {
@@ -41,19 +45,28 @@ export default function CheckInPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!lotInfo || !lotInfo.lot_id) {
+            toast.error("You need an assigned parking lot to check in vehicles");
+            return;
+        }
+
         setLoading(true);
         setTicket(null);
+
 
         try {
             const response = await checkInVehicle({
                 ...form,
-                lot_id: selectedLotId || parkingLots[0]?.lot_id,
+                lot_id: lotInfo.lot_id,
             });
+
 
             if (response.success) {
                 toast.success("Vehicle checked in successfully");
                 setForm({
                     ...form,
+                    license_plate: "",
                     license_plate: "",
                 });
                 setTicket(response.ticket);
@@ -169,21 +182,12 @@ export default function CheckInPage() {
                                     </div>
                                 </div>
 
-                                {parkingLots.length > 1 && (
+                                {lotInfo && (
                                     <div>
-                                        <label className="block text-gray-700 font-medium mb-2">Parking Lot *</label>
-                                        <select
-                                            value={selectedLotId}
-                                            onChange={(e) => setSelectedLotId(e.target.value)}
-                                            required
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            {parkingLots.map((lot) => (
-                                                <option key={lot.lot_id} value={lot.lot_id}>
-                                                    {lot.lot_name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <label className="block text-gray-700 font-medium mb-2">Parking Lot</label>
+                                        <div className="p-3 border border-gray-300 rounded-md bg-gray-50">
+                                            {lotInfo.lot_name}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -226,10 +230,70 @@ export default function CheckInPage() {
                 </div>
             </div>
 
+
             {ticket && (
                 <div className="mt-8 bg-white border border-green-200 rounded-lg overflow-hidden shadow-md">
                     <div className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
+                <div className="mt-8 bg-white border border-green-200 rounded-lg overflow-hidden shadow-md">
+                    <div className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
                         <div>
+                            <h3 className="text-xl font-semibold">Parking Ticket Generated</h3>
+                            <p className="text-green-100 text-sm">Ticket created successfully</p>
+                        </div>
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center px-4 py-2 bg-white text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-white"
+                        >
+                            <FaPrint className="mr-2" />
+                            Print
+                        </button>
+                    </div>
+
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaQrcode className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Ticket ID</p>
+                                    <p className="font-semibold">{ticket.session_id}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaCar className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">License Plate</p>
+                                    <p className="font-semibold">{ticket.license_plate}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    {ticket.vehicle_type === "car" ? (
+                                        <FaCar className="h-5 w-5 text-green-600" />
+                                    ) : (
+                                        <FaMotorcycle className="h-5 w-5 text-green-600" />
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Vehicle Type</p>
+                                    <p className="font-semibold capitalize">{ticket.vehicle_type}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="bg-green-100 p-2 rounded-full mr-3">
+                                    <FaRegClock className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Check-in Time</p>
+                                    <p className="font-semibold">{formatDateTime(ticket.time_in)}</p>
+                                </div>
+                            </div>
                             <h3 className="text-xl font-semibold">Parking Ticket Generated</h3>
                             <p className="text-green-100 text-sm">Ticket created successfully</p>
                         </div>
@@ -292,7 +356,18 @@ export default function CheckInPage() {
                         <div className="mt-6 p-4 bg-gray-50 rounded-md">
                             <p className="text-sm text-gray-500 mb-2">QR Code</p>
                             <p className="font-mono text-xs bg-white p-3 rounded border border-gray-200">
+
+                        <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                            <p className="text-sm text-gray-500 mb-2">QR Code</p>
+                            <p className="font-mono text-xs bg-white p-3 rounded border border-gray-200">
                                 {ticket.qr_code}
+                            </p>
+                        </div>
+
+                        <div className="mt-4 p-4 bg-green-50 rounded-md text-green-800 text-sm">
+                            <p>
+                                This ticket has been successfully created and the vehicle has been checked in. Please
+                                provide the printed ticket to the customer.
                             </p>
                         </div>
 
@@ -308,3 +383,4 @@ export default function CheckInPage() {
         </div>
     );
 }
+

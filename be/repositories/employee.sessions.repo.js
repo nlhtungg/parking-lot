@@ -219,6 +219,115 @@ exports.confirmPayment = async (paymentData) => {
     }
 };
 
+exports.createAndConfirmPayment = async (paymentData) => {
+    // Start a transaction
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const {
+            session_id,
+            sub_id,
+            total_amount,
+            payment_method,
+            is_lost
+        } = paymentData;
+        
+        // Create the payment
+        const createPaymentQuery = `
+            INSERT INTO Payment (
+                session_id,
+                sub_id,
+                payment_method,
+                total_amount,
+                payment_date
+            ) VALUES ($1, $2, $3, $4, NOW())
+            RETURNING *
+        `;
+        
+        const paymentResult = await client.query(createPaymentQuery, [
+            session_id,
+            sub_id || null,
+            payment_method,
+            total_amount
+        ]);
+        
+        // Get session details
+        const sessionQuery = `
+            SELECT * FROM ParkingSessions
+            WHERE session_id = $1
+        `;
+        
+        const sessionResult = await client.query(sessionQuery, [session_id]);
+        const session = sessionResult.rows[0];
+        
+        // Update the session with time_out and parking_fee
+        const updateSessionQuery = `
+            UPDATE ParkingSessions
+            SET 
+                time_out = NOW(),
+                is_lost = $1,
+                parking_fee = $2
+            WHERE session_id = $3
+            RETURNING *
+        `;
+        
+        const updatedSessionResult = await client.query(updateSessionQuery, [
+            is_lost || false,
+            total_amount,
+            session_id
+        ]);
+        
+        // Update the parking lot vehicle count
+        const column = session.vehicle_type.toLowerCase() === 'car' ? 'current_car' : 'current_bike';
+        
+        const updateLotQuery = `
+            UPDATE ParkingLots
+            SET ${column} = GREATEST(${column} - 1, 0)
+            WHERE lot_id = $1
+            RETURNING *
+        `;
+        
+        await client.query(updateLotQuery, [session.lot_id]);
+        
+        // If lost ticket, create a report
+        if (is_lost) {
+            const lostTicketQuery = `
+                INSERT INTO LostTicketReport (
+                    session_id,
+                    guest_identification,
+                    guest_phone,
+                    penalty_fee
+                ) VALUES ($1, 'UNKNOWN', 'UNKNOWN', $2)
+            `;
+            
+            // Use the penalty fee from the fee config or a default value
+            const penaltyFee = session.penalty_fee || 50000;
+            
+            await client.query(lostTicketQuery, [
+                session_id,
+                penaltyFee
+            ]);
+        }
+        
+        // Commit the transaction
+        await client.query('COMMIT');
+        
+        return {
+            payment: paymentResult.rows[0],
+            session: updatedSessionResult.rows[0]
+        };
+    } catch (error) {
+        // Rollback in case of error
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        // Release the client
+        client.release();
+    }
+};
+
 exports.getActiveSessionsByLot = async (lotId) => {
     const query = `
         SELECT * FROM ParkingSessions
