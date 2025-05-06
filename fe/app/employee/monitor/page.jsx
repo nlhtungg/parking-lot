@@ -42,23 +42,27 @@ function CapacityBar({ current, max, type }) {
 }
 
 // LotStatus component to display lot information
-function LotStatus({ lot, onRefresh, loading }) {
+function LotStatus({ lot, loading }) {
     if (!lot) return null;
 
     return (
         <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
-            <div className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
-                <h2 className="text-xl font-semibold flex items-center">
-                    <FaParking className="mr-2" />
-                    {lot.lot_name} - Status
-                </h2>
-                <button
-                    onClick={onRefresh}
-                    disabled={loading}
-                    className="text-white hover:bg-blue-700 rounded-full p-2 transition-colors"
-                >
-                    <FaSync className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                </button>
+            <div className="bg-blue-600 text-white px-6 py-4">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold flex items-center">
+                        <FaParking className="mr-2" />
+                        {lot.lot_name} - Status
+                    </h2>
+                    {/* Removing refresh button as requested
+                    <button
+                        onClick={() => fetchData()}
+                        disabled={loading}
+                        className="text-white hover:bg-blue-700 rounded-full p-2 transition-colors"
+                    >
+                        <FaSync className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    </button>
+                    */}
+                </div>
             </div>
             <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -258,7 +262,7 @@ export default function LotMonitorPage() {
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
-            <LotStatus lot={lot} onRefresh={fetchData} loading={loading} />
+            <LotStatus lot={lot} loading={loading} />
             <ActiveSessionsTable sessions={sessions} />
         </div>
     );
