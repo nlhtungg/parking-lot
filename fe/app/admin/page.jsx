@@ -178,7 +178,7 @@ export default function AdminPage() {
                                 <div
                                     key={index}
                                     className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition cursor-pointer flex items-start"
-                                    onClick={() => router.push(`/admin/notifications/${notification.id}`)}
+                                    onClick={() => router.push(`/admin/notifications/${notification.noti_id}`)}
                                 >
                                     <div className="bg-indigo-100 p-2 rounded-full mr-4">
                                         <HiBell className="text-indigo-500 text-lg" />
