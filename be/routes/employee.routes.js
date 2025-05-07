@@ -7,6 +7,7 @@ const sessionsController = require('../controllers/employee.sessions.controller'
 const lotsController = require('../controllers/admin.lots.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const monitorController = require('../controllers/employee.monitor.controller');
+const profileController = require('../controllers/employee.profile.controller');
 
 router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['employee']));
 
@@ -29,5 +30,9 @@ router.post('/parking-sessions', sessionsController.checkInVehicle);
 router.post('/parking/entry', sessionsController.checkInVehicle);
 router.post('/parking/exit', sessionsController.initiateCheckout);
 router.post('/parking/exit/confirm', sessionsController.confirmCheckout);
+
+// Profile routes
+router.get('/profile', profileController.getMyProfile);
+router.put('/profile', profileController.updateMyProfile);
 
 module.exports = router;

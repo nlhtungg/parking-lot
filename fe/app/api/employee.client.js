@@ -51,3 +51,15 @@ export async function confirmCheckout(paymentId, paymentMethod, isLost = false) 
     });
     return res.data;
 }
+
+// Fetch user profile
+export async function fetchMyProfile() {
+    const res = await api.get("/employee/profile");
+    return res.data; // Adjusted to return res.data directly
+}
+
+// Update user profile
+export async function updateMyProfile(profileData) {
+    const res = await api.put("/employee/profile", profileData);
+    return res.data;
+}
