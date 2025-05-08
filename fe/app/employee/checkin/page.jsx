@@ -5,6 +5,7 @@ import { checkInVehicle } from "../../api/employee.client";
 import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
+import FormField from "../../components/common/FormField";
 
 export default function CheckInPage() {
     const toast = useToast();
@@ -68,14 +69,13 @@ export default function CheckInPage() {
                         <form onSubmit={handleSubmit} className="p-6">
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-gray-700 font-medium mb-2">License Plate *</label>
-                                    <input
-                                        type="text"
+                                    <FormField
                                         name="license_plate"
+                                        label="License Plate"
+                                        type="text"
                                         value={form.license_plate}
                                         onChange={handleChange}
                                         required
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="e.g., ABC-123"
                                     />
                                 </div>
@@ -84,7 +84,7 @@ export default function CheckInPage() {
                                     <label className="block text-gray-700 font-medium mb-2">Vehicle Type *</label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div
-                                            className={`border rounded-md p-4 flex items-center cursor-pointer ${
+                                            className={`border-2 rounded-md p-4 flex items-center cursor-pointer ${
                                                 form.vehicle_type === "car"
                                                     ? "bg-blue-50 border-blue-500"
                                                     : "hover:bg-gray-50"
@@ -115,7 +115,7 @@ export default function CheckInPage() {
                                             />
                                         </div>
                                         <div
-                                            className={`border rounded-md p-4 flex items-center cursor-pointer ${
+                                            className={`border-2 rounded-md p-4 flex items-center cursor-pointer ${
                                                 form.vehicle_type === "bike"
                                                     ? "bg-blue-50 border-blue-500"
                                                     : "hover:bg-gray-50"
@@ -269,4 +269,3 @@ export default function CheckInPage() {
         </div>
     );
 }
-
