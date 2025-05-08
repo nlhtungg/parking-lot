@@ -15,6 +15,7 @@ exports.checkInVehicle = async (req, res) => {
 
         // Validate required fields
         if (!license_plate || !vehicle_type) {
+        if (!license_plate || !vehicle_type) {
             return res.status(422).json({
                 success: false,
                 message: "Missing required fields",
@@ -96,6 +97,7 @@ exports.checkInVehicle = async (req, res) => {
         // Create new session with the employee's assigned lot
         const newSession = await sessionsRepo.startSession({
             lot_id: parkingLot.lot_id,
+            lot_id: parkingLot.lot_id,
             license_plate,
             vehicle_type,
             is_monthly,
@@ -128,6 +130,7 @@ exports.checkInVehicle = async (req, res) => {
     }
 };
 
+// Vehicle Exit - Stage 1: Get session info for checkout (READ-ONLY)
 // Vehicle Exit - Stage 1: Get session info for checkout (READ-ONLY)
 exports.initiateCheckout = async (req, res) => {
     try {
