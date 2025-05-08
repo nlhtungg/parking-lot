@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { checkInVehicle, fetchParkingLots } from "../../api/employee.client";
+import { useState } from "react";
+import { checkInVehicle } from "../../api/employee.client";
 import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
@@ -9,31 +9,11 @@ import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/
 export default function CheckInPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
-    const [parkingLots, setParkingLots] = useState([]);
-    const [selectedLotId, setSelectedLotId] = useState("");
     const [ticket, setTicket] = useState(null);
     const [form, setForm] = useState({
         license_plate: "",
         vehicle_type: "car",
     });
-
-    // Fetch parking lots on component mount
-    useEffect(() => {
-        async function loadParkingLots() {
-            try {
-                const data = await fetchParkingLots();
-                setParkingLots(data || []);
-                if (data && data.length > 0) {
-                    setSelectedLotId(data[0].lot_id);
-                }
-            } catch (error) {
-                console.error("Error fetching parking lots:", error);
-                toast.error("Failed to load parking lots");
-            }
-        }
-
-        loadParkingLots();
-    }, []);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,7 +27,6 @@ export default function CheckInPage() {
         try {
             const response = await checkInVehicle({
                 ...form,
-                lot_id: selectedLotId || parkingLots[0]?.lot_id,
             });
 
             if (response.success) {
@@ -168,24 +147,6 @@ export default function CheckInPage() {
                                         </div>
                                     </div>
                                 </div>
-
-                                {parkingLots.length > 1 && (
-                                    <div>
-                                        <label className="block text-gray-700 font-medium mb-2">Parking Lot *</label>
-                                        <select
-                                            value={selectedLotId}
-                                            onChange={(e) => setSelectedLotId(e.target.value)}
-                                            required
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            {parkingLots.map((lot) => (
-                                                <option key={lot.lot_id} value={lot.lot_id}>
-                                                    {lot.lot_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
                             </div>
 
                             <div className="mt-8">
@@ -308,3 +269,4 @@ export default function CheckInPage() {
         </div>
     );
 }
+

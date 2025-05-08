@@ -27,7 +27,7 @@ router.post("/parking-sessions", sessionsController.checkInVehicle);
 
 // New entry/exit API endpoints
 router.post("/parking/entry", sessionsController.checkInVehicle);
-router.get("/parking/exit/:session_id", sessionsController.initiateCheckout); // Changed to GET with parameter
+router.get("/parking/exit/:session_id", sessionsController.initiateCheckout);
 router.post("/parking/exit/confirm", sessionsController.confirmCheckout);
 
 // Lost ticket report

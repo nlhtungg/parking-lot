@@ -19,10 +19,10 @@ function ConfigurationPage() {
 
                 // Sort fees in the desired order: car daily, car monthly, bike daily, bike monthly
                 const sortedFees = [
-                    data.find(fee => fee.vehicle_type === 'Car' && fee.ticket_type === 'Daily'),
-                    data.find(fee => fee.vehicle_type === 'Car' && fee.ticket_type === 'Monthly'),
-                    data.find(fee => fee.vehicle_type === 'Bike' && fee.ticket_type === 'Daily'),
-                    data.find(fee => fee.vehicle_type === 'Bike' && fee.ticket_type === 'Monthly'),
+                    data.find(fee => fee.vehicle_type === 'car' && fee.ticket_type === 'daily'),
+                    data.find(fee => fee.vehicle_type === 'car' && fee.ticket_type === 'monthly'),
+                    data.find(fee => fee.vehicle_type === 'bike' && fee.ticket_type === 'daily'),
+                    data.find(fee => fee.vehicle_type === 'bike' && fee.ticket_type === 'monthly'),
                 ].filter(Boolean); // Remove any undefined entries
 
                 setFees(sortedFees);

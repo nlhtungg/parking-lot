@@ -26,10 +26,6 @@ export default function CheckOutPage() {
         try {
             const data = await fetchActiveSessions();
             setActiveSessions(data.sessions || []);
-            setLotInfo({
-                lot_id: data.lot_id,
-                lot_name: data.lot_name,
-            });
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to load sessions");
         } finally {
