@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { initiateCheckout, confirmCheckout } from "@/app/api/employee.client";
 import PageHeader from "@/app/components/common/PageHeader";
 import { useToast } from "@/app/components/providers/ToastProvider";
@@ -18,19 +18,34 @@ export default function PaymentDetailsPage({ params }) {
     const { sessionid } = params;
     const toast = useToast();
     const router = useRouter();
+
+    // State: loading, error, checkout, payment method
     const [loading, setLoading] = useState(true);
-    const [currentSession, setCurrentSession] = useState(null);
-    const [paymentDetails, setPaymentDetails] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState("CASH");
     const [error, setError] = useState(null);
+    const [checkout, setCheckout] = useState({
+        amount: null,
+        hours: null,
+        serviceFee: null,
+        penaltyFee: null,
+        session: null,
+    });
+    const [paymentMethod, setPaymentMethod] = useState("CASH");
+    const [liveHours, setLiveHours] = useState(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
         if (!sessionid) return;
         setLoading(true);
         initiateCheckout(sessionid)
             .then((result) => {
-                setPaymentDetails(result);
-                setCurrentSession(result.session_details);
+                setCheckout({
+                    amount: result.amount,
+                    hours: result.hours,
+                    serviceFee: result.serviceFee,
+                    penaltyFee: result.penaltyFee,
+                    session: result.session_details,
+                });
+                setLiveHours(result.hours);
             })
             .catch((err) => {
                 setError(err.response?.data?.message || "Failed to load payment details");
@@ -38,17 +53,45 @@ export default function PaymentDetailsPage({ params }) {
             .finally(() => setLoading(false));
     }, [sessionid]);
 
+    // Live update current time and hours (duration)
+    useEffect(() => {
+        if (!checkout.session || !checkout.session.time_in) return;
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+            const checkInTime = new Date(checkout.session.time_in);
+            const now = new Date();
+            const diffMs = now - checkInTime;
+            const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+            setLiveHours(diffHours);
+        }, 1000); // update every second
+        return () => clearInterval(interval);
+    }, [checkout.session]);
+
     const handleConfirmPayment = async () => {
-        if (!paymentDetails || !currentSession) {
+        if (!checkout.session) {
             toast.error("No checkout session to confirm");
             return;
         }
         setLoading(true);
         try {
-            const result = await confirmCheckout(currentSession.session_id, paymentMethod, currentSession.is_lost);
-            setPaymentDetails(result.payment);
+            const result = await confirmCheckout(sessionid, paymentMethod);
+            setCheckout((prev) => ({
+                ...prev,
+                amount: result.amount,
+                hours: result.hours,
+                serviceFee: result.serviceFee,
+                penaltyFee: result.penaltyFee,
+            }));
             toast.success("Payment confirmed and vehicle checked out");
-            router.replace("/employee/checkout");
+            // Redirect to success page with relevant info
+            const params = new URLSearchParams({
+                license_plate: checkout.session.license_plate,
+                duration_hours: (liveHours ?? checkout.hours).toString(),
+                amount: (result.amount ?? checkout.amount).toString(),
+                is_monthly: checkout.session.is_monthly ? "true" : "false",
+                payment_method: paymentMethod,
+            });
+            router.replace(`/employee/checkout/success?${params.toString()}`);
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to confirm payment");
         } finally {
@@ -71,7 +114,7 @@ export default function PaymentDetailsPage({ params }) {
 
     if (loading) return <div className="p-8 text-center">Loading...</div>;
     if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
-    if (!currentSession || !paymentDetails) return null;
+    if (!checkout.session) return null;
 
     return (
         <div className="container mx-auto p-6">
@@ -96,36 +139,36 @@ export default function PaymentDetailsPage({ params }) {
                             <div className="space-y-3">
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Ticket ID:</span>
-                                    <span className="text-sm font-medium">{currentSession.session_id}</span>
+                                    <span className="text-sm font-medium">{checkout.session.session_id}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">License Plate:</span>
-                                    <span className="text-sm font-medium">{currentSession.license_plate}</span>
+                                    <span className="text-sm font-medium">{checkout.session.license_plate}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Vehicle Type:</span>
                                     <span className="text-sm font-medium capitalize">
-                                        {currentSession.vehicle_type}
+                                        {checkout.session.vehicle_type}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Monthly Pass:</span>
                                     <span
                                         className={`text-sm font-medium ${
-                                            currentSession.is_monthly ? "text-green-600" : ""
+                                            checkout.session.is_monthly ? "text-green-600" : ""
                                         }`}
                                     >
-                                        {currentSession.is_monthly ? "Yes" : "No"}
+                                        {checkout.session.is_monthly ? "Yes" : "No"}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Lost Ticket:</span>
                                     <span
                                         className={`text-sm font-medium ${
-                                            currentSession.is_lost ? "text-red-600" : ""
+                                            checkout.session.is_lost ? "text-red-600" : ""
                                         }`}
                                     >
-                                        {currentSession.is_lost ? "Yes (penalty applied)" : "No"}
+                                        {checkout.session.is_lost ? "Yes (penalty applied)" : "No"}
                                     </span>
                                 </div>
                             </div>
@@ -141,22 +184,30 @@ export default function PaymentDetailsPage({ params }) {
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Check-In Time:</span>
                                     <span className="text-sm font-medium">
-                                        {formatDateTime(currentSession.time_in)}
+                                        {formatDateTime(checkout.session.time_in)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Current Time:</span>
-                                    <span className="text-sm font-medium">{formatDateTime(new Date())}</span>
+                                    <span className="text-sm font-medium">{formatDateTime(currentTime)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-gray-500">Duration:</span>
-                                    <span className="text-sm font-medium">{currentSession.duration_hours} hours</span>
+                                    <span className="text-sm font-medium">{liveHours ?? checkout.hours} hours</span>
                                 </div>
                                 <div className="flex justify-between font-medium">
                                     <span className="text-sm text-gray-700">Payment Amount:</span>
                                     <span className="text-lg text-green-600 font-bold">
-                                        {formatCurrency(paymentDetails.amount)}
+                                        {formatCurrency(checkout.amount)}
                                     </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-sm text-gray-500">Service Fee:</span>
+                                    <span className="text-sm font-medium">{formatCurrency(checkout.serviceFee)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-sm text-gray-500">Penalty Fee:</span>
+                                    <span className="text-sm font-medium">{formatCurrency(checkout.penaltyFee)}</span>
                                 </div>
                             </div>
                         </div>

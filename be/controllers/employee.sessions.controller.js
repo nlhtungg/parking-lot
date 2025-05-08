@@ -192,15 +192,10 @@ exports.initiateCheckout = async (req, res) => {
             success: true,
             message: "Checkout information retrieved",
             amount: totalAmount,
-            session_details: {
-                license_plate: session.license_plate,
-                vehicle_type: session.vehicle_type,
-                time_in: session.time_in,
-                is_monthly: session.is_monthly,
-                duration_hours: hours,
-                is_lost: session.is_lost,
-                duration_hours: hours,
-            },
+            hours: hours,
+            serviceFee: serviceFee,
+            penaltyFee: penaltyFee,
+            session_details: session,
         });
     } catch (error) {
         console.error("Initiate checkout error:", error);
@@ -214,7 +209,7 @@ exports.initiateCheckout = async (req, res) => {
 // Vehicle Exit - Stage 2: Confirm payment and complete checkout
 exports.confirmCheckout = async (req, res) => {
     try {
-        const { session_id, payment_method, is_lost } = req.body;
+        const { session_id, payment_method } = req.body;
 
         if (!session_id || !payment_method) {
             return res.status(422).json({
@@ -259,35 +254,18 @@ exports.confirmCheckout = async (req, res) => {
         const currentTime = new Date();
         const checkInTime = new Date(session.time_in);
         const hours = Math.ceil(calculateHoursDifference(checkInTime, currentTime));
-
         let totalAmount = 0;
         let sub_id = null;
-
-        // Check if is_monthly is true from the session
         if (session.is_monthly) {
-            // No charge for monthly subscribers
             totalAmount = 0;
-
-            // Get the subscription ID
-            const today = getToday();
-            const monthlyPass = await sessionsRepo.checkMonthlySub(session.license_plate, today);
-            if (monthlyPass) {
-                sub_id = monthlyPass.sub_id;
-            }
         } else {
-            // Get fee configuration
             serviceFee = parseFloat(session.service_fee);
-
-            // Calculate payment based on hours
             if (hours <= 1) {
                 totalAmount = serviceFee;
             } else {
-                // First hour at standard rate, additional hours with incremental fee
                 totalAmount = serviceFee + (hours - 1) * (serviceFee * 0.5);
             }
-
-            // Apply lost ticket penalty if applicable
-            if (is_lost && session.penalty_fee) {
+            if (session.is_lost && session.penalty_fee) {
                 totalAmount += parseFloat(session.penalty_fee);
             }
         }
@@ -295,10 +273,10 @@ exports.confirmCheckout = async (req, res) => {
         // NOW create the payment record and update the session in one transaction
         const { payment, session: updatedSession } = await sessionsRepo.createAndConfirmPayment({
             session_id,
-            sub_id,
+            sub_id: null,
             total_amount: totalAmount,
             payment_method,
-            is_lost: is_lost || false,
+            is_lost: session.is_lost,
         });
 
         res.status(200).json({

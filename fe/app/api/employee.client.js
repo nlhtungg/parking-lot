@@ -40,11 +40,10 @@ export async function initiateCheckout(sessionId) {
 }
 
 // Confirm payment and complete check-out (Exit Stage 2) - Creates payment record and updates session
-export async function confirmCheckout(sessionId, paymentMethod, isLost) {
+export async function confirmCheckout(sessionId, paymentMethod) {
     const res = await api.post("/employee/parking/exit/confirm", {
         session_id: sessionId,
         payment_method: paymentMethod,
-        is_lost: isLost,
     });
     return res.data;
 }
