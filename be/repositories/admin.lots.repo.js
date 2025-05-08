@@ -1,4 +1,4 @@
-const { pool } = require('../config/db');
+const { pool } = require("../config/db");
 
 exports.getAllParkingLots = async () => {
     const query = `
@@ -33,14 +33,10 @@ exports.getLotParkingSessions = async (lotId) => {
     `;
     const result = await pool.query(query, [lotId]);
     return result.rows;
-}
+};
 
 exports.createParkingLot = async (parkingLotData) => {
-    const {
-        lot_name,
-        car_capacity,
-        bike_capacity
-    } = parkingLotData;
+    const { lot_name, car_capacity, bike_capacity } = parkingLotData;
 
     const query = `
         INSERT INTO ParkingLots (
@@ -52,22 +48,13 @@ exports.createParkingLot = async (parkingLotData) => {
         ) VALUES ($1, $2, $3, 0, 0)
         RETURNING *
     `;
-    
-    const result = await pool.query(query, [
-        lot_name,
-        car_capacity,
-        bike_capacity
-    ]);
+
+    const result = await pool.query(query, [lot_name, car_capacity, bike_capacity]);
     return result.rows[0];
 };
 
 exports.updateParkingLot = async (lotId, parkingLotData) => {
-    const {
-        lot_name,
-        car_capacity,
-        bike_capacity,
-        managed_by
-    } = parkingLotData;
+    const { lot_name, car_capacity, bike_capacity, managed_by } = parkingLotData;
 
     const query = `
         UPDATE ParkingLots
@@ -79,14 +66,8 @@ exports.updateParkingLot = async (lotId, parkingLotData) => {
         WHERE lot_id = $5
         RETURNING *
     `;
-    
-    const result = await pool.query(query, [
-        lot_name,
-        car_capacity,
-        bike_capacity,
-        managed_by,
-        lotId
-    ]);
+
+    const result = await pool.query(query, [lot_name, car_capacity, bike_capacity, managed_by, lotId]);
     return result.rows[0];
 };
 
@@ -98,9 +79,9 @@ exports.deleteParkingLot = async (lotId) => {
         WHERE lot_id = $1 AND time_out IS NULL
     `;
     const checkResult = await pool.query(checkQuery, [lotId]);
-    
+
     if (parseInt(checkResult.rows[0].active_sessions) > 0) {
-        throw new Error('Cannot delete parking lot with active sessions');
+        throw new Error("Cannot delete parking lot with active sessions");
     }
 
     const query = `
@@ -110,7 +91,7 @@ exports.deleteParkingLot = async (lotId) => {
     `;
     const result = await pool.query(query, [lotId]);
     return result.rows[0];
-}; 
+};
 
 // Add the new function here
 exports.getParkingLotByManager = async (managerId) => {
@@ -121,4 +102,16 @@ exports.getParkingLotByManager = async (managerId) => {
     `;
     const result = await pool.query(query, [managerId]);
     return result.rows[0];
+};
+
+// Fetch all lost ticket reports
+exports.getAllLostTicketReports = async () => {
+    const query = `
+        SELECT ltr.*, ps.license_plate, ps.vehicle_type, ps.lot_id, ps.time_in, ps.time_out
+        FROM LostTicketReport ltr
+        JOIN ParkingSessions ps ON ltr.session_id = ps.session_id
+        ORDER BY ltr.created_at DESC
+    `;
+    const result = await pool.query(query);
+    return result.rows;
 };
