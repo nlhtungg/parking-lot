@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 const employeeController = require('../controllers/employee.controller');
@@ -9,22 +9,22 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const monitorController = require('../controllers/employee.monitor.controller');
 const profileController = require('../controllers/employee.profile.controller');
 
-router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(['employee']));
+router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(["employee"]));
 
-router.get('/', employeeController.getDashboard);
+router.get("/", employeeController.getDashboard);
 
-router.get('/monitor', monitorController.getMyLot);
-router.get('/monitor/sessions', monitorController.getMyParkingSessions);
+router.get("/monitor", monitorController.getMyLot);
+router.get("/monitor/sessions", monitorController.getMyParkingSessions);
 
-router.get('/notifications', notiController.getAllNotifications);
-router.get('/notifications/:id', notiController.getNotificationById);
+router.get("/notifications", notiController.getAllNotifications);
+router.get("/notifications/:id", notiController.getNotificationById);
 
 // Parking lots route
-router.get('/parking-lots', lotsController.getAllParkingLots);
+router.get("/parking-lots", lotsController.getAllParkingLots);
 
 // Parking sessions routes
-router.get('/parking-sessions', sessionsController.getActiveSessions);
-router.post('/parking-sessions', sessionsController.checkInVehicle);
+router.get("/parking-sessions", sessionsController.getActiveSessions);
+router.post("/parking-sessions", sessionsController.checkInVehicle);
 
 // New entry/exit API endpoints
 router.post('/parking/entry', sessionsController.checkInVehicle);

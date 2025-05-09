@@ -1,17 +1,17 @@
-const lotsRepo = require('../repositories/admin.lots.repo');
+const lotsRepo = require("../repositories/admin.lots.repo");
 
 exports.getAllParkingLots = async (req, res) => {
     try {
         const parkingLots = await lotsRepo.getAllParkingLots();
         res.status(200).json({
             success: true,
-            data: parkingLots
+            data: parkingLots,
         });
     } catch (error) {
-        console.error('Get parking lots error:', error);
+        console.error("Get parking lots error:", error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
 };
@@ -20,23 +20,23 @@ exports.getParkingLotById = async (req, res) => {
     try {
         const { id } = req.params;
         const parkingLot = await lotsRepo.getParkingLotById(id);
-        
+
         if (!parkingLot) {
             return res.status(404).json({
                 success: false,
-                message: 'Parking lot not found'
+                message: "Parking lot not found",
             });
         }
 
         res.status(200).json({
             success: true,
-            data: parkingLot
+            data: parkingLot,
         });
     } catch (error) {
-        console.error('Get parking lot error:', error);
+        console.error("Get parking lot error:", error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
 };
@@ -49,22 +49,22 @@ exports.getLotParkingSessions = async (req, res) => {
         if (!parkingSessions) {
             return res.status(404).json({
                 success: false,
-                message: 'Parking lot not found'
+                message: "Parking lot not found",
             });
         }
 
         res.status(200).json({
             success: true,
-            data: parkingSessions
+            data: parkingSessions,
         });
     } catch (error) {
-        console.error('Get parking sessions error:', error);
+        console.error("Get parking sessions error:", error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
-}
+};
 
 exports.createParkingLot = async (req, res) => {
     try {
@@ -74,25 +74,25 @@ exports.createParkingLot = async (req, res) => {
         if (!lot_name || !car_capacity || !bike_capacity) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields'
+                message: "Missing required fields",
             });
         }
 
         const newParkingLot = await lotsRepo.createParkingLot({
             lot_name,
             car_capacity,
-            bike_capacity
+            bike_capacity,
         });
 
         res.status(201).json({
             success: true,
-            data: newParkingLot
+            data: newParkingLot,
         });
     } catch (error) {
-        console.error('Create parking lot error:', error);
+        console.error("Create parking lot error:", error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
 };
@@ -106,7 +106,7 @@ exports.updateParkingLot = async (req, res) => {
         if (!lot_name || !car_capacity || !bike_capacity) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields'
+                message: "Missing required fields",
             });
         }
 
@@ -114,25 +114,25 @@ exports.updateParkingLot = async (req, res) => {
             lot_name,
             car_capacity,
             bike_capacity,
-            managed_by
+            managed_by,
         });
 
         if (!updatedParkingLot) {
             return res.status(404).json({
                 success: false,
-                message: 'Parking lot not found'
+                message: "Parking lot not found",
             });
         }
 
         res.status(200).json({
             success: true,
-            data: updatedParkingLot
+            data: updatedParkingLot,
         });
     } catch (error) {
-        console.error('Update parking lot error:', error);
+        console.error("Update parking lot error:", error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
 };
@@ -145,26 +145,43 @@ exports.deleteParkingLot = async (req, res) => {
         if (!deletedParkingLot) {
             return res.status(404).json({
                 success: false,
-                message: 'Parking lot not found'
+                message: "Parking lot not found",
             });
         }
 
         res.status(200).json({
             success: true,
-            message: 'Parking lot deleted successfully',
-            data: deletedParkingLot
+            message: "Parking lot deleted successfully",
+            data: deletedParkingLot,
         });
     } catch (error) {
-        console.error('Delete parking lot error:', error);
-        if (error.message === 'Cannot delete parking lot with active sessions') {
+        console.error("Delete parking lot error:", error);
+        if (error.message === "Cannot delete parking lot with active sessions") {
             return res.status(400).json({
                 success: false,
-                message: error.message
+                message: error.message,
             });
         }
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: "Internal server error",
         });
     }
-}; 
+};
+
+// Get all lost ticket reports
+exports.getAllLostTicketReports = async (req, res) => {
+    try {
+        const reports = await lotsRepo.getAllLostTicketReports();
+        res.status(200).json({
+            success: true,
+            data: reports,
+        });
+    } catch (error) {
+        console.error("Get lost ticket reports error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

@@ -4,8 +4,31 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { HiHome, HiOfficeBuilding, HiCog, HiMenu, HiX, HiIdentification, HiQuestionMarkCircle, HiOutlineCash, HiSpeakerphone, HiOutlineStatusOffline, HiOutlineClipboard } from "react-icons/hi";
-import { HiCheckBadge, HiDocumentCurrencyDollar, HiOutlineArchiveBoxArrowDown, HiOutlineArrowLeftEndOnRectangle, HiOutlineArrowLongLeft, HiOutlineArrowRightEndOnRectangle, HiOutlineClipboardDocument, HiOutlineQuestionMarkCircle, HiPresentationChartLine, HiSpeakerXMark } from "react-icons/hi2";
+import {
+    HiHome,
+    HiOfficeBuilding,
+    HiCog,
+    HiMenu,
+    HiX,
+    HiIdentification,
+    HiQuestionMarkCircle,
+    HiOutlineCash,
+    HiSpeakerphone,
+    HiOutlineStatusOffline,
+    HiOutlineClipboard,
+} from "react-icons/hi";
+import {
+    HiCheckBadge,
+    HiDocumentCurrencyDollar,
+    HiOutlineArchiveBoxArrowDown,
+    HiOutlineArrowLeftEndOnRectangle,
+    HiOutlineArrowLongLeft,
+    HiOutlineArrowRightEndOnRectangle,
+    HiOutlineClipboardDocument,
+    HiOutlineQuestionMarkCircle,
+    HiPresentationChartLine,
+    HiSpeakerXMark,
+} from "react-icons/hi2";
 
 import { logout } from "../../api/auth.client";
 import { useUser } from "../providers/UserProvider";
@@ -64,7 +87,7 @@ const Sidebar = () => {
             name: "Profile",
             href: "/employee/profile",
             icon: <HiIdentification className="mr-3 h-6 w-6" />,
-        }
+        },
     ];
 
     // Render navigation links
@@ -154,7 +177,10 @@ const Sidebar = () => {
 
             {/* Static sidebar for desktop */}
             <div className="hidden md:block md:w-64 md:flex-none">
-                <div className="h-full flex flex-col border-r border-gray-200 bg-white">
+                <div
+                    className="flex flex-col border-r border-gray-200 bg-white fixed top-0 bottom-0"
+                    style={{ width: "16rem" }}
+                >
                     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
                             <span className="text-indigo-600 font-bold text-xl">Parking System</span>

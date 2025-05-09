@@ -33,21 +33,27 @@ export async function checkInVehicle(sessionData) {
     return res.data;
 }
 
-// Initiate check-out process (Exit Stage 1)
-export async function initiateCheckout(sessionId, isLost = false) {
-    const res = await api.post("/employee/parking/exit", {
+// Initiate check-out process (Exit Stage 1) - Just gets preliminary information, no DB updates
+export async function initiateCheckout(sessionId) {
+    const res = await api.get(`/employee/parking/exit/${sessionId}`);
+    return res.data;
+}
+
+// Confirm payment and complete check-out (Exit Stage 2) - Creates payment record and updates session
+export async function confirmCheckout(sessionId, paymentMethod) {
+    const res = await api.post("/employee/parking/exit/confirm", {
         session_id: sessionId,
-        is_lost: isLost
+        payment_method: paymentMethod,
     });
     return res.data;
 }
 
-// Confirm payment and complete check-out (Exit Stage 2)
-export async function confirmCheckout(paymentId, paymentMethod, isLost = false) {
-    const res = await api.post("/employee/parking/exit/confirm", {
-        payment_id: paymentId,
-        payment_method: paymentMethod,
-        is_lost: isLost
+// Report a lost ticket (employee)
+export async function reportLostTicket({ session_id, guest_identification, guest_phone }) {
+    const res = await api.post("/employee/lost-tickets", {
+        session_id,
+        guest_identification,
+        guest_phone,
     });
     return res.data;
 }

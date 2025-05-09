@@ -30,9 +30,9 @@ export default function FormField({
     error = "",
 }) {
     // Common classes
-    const labelClass = "block text-sm mb-1";
+    const labelClass = "block text-gray-700 font-medium mb-2";
     const inputClass =
-        "w-full px-2 py-1 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm";
+        "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm";
     const errorClass = "mt-1 text-sm text-red-600";
 
     // Render the appropriate input based on type
