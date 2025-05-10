@@ -130,6 +130,12 @@ export async function addNotification(notification) {
     return res.data.data;
 }
 
+// Client: Delete a notification
+export async function deleteNotification(id) {
+    const res = await api.delete(`/admin/notifications/${id}`);
+    return res.data.data;
+}
+
 // ===================== LOST TICKETS =====================
 // Fetch all lost ticket reports
 export async function fetchAllLostTickets() {

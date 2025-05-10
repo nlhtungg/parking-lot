@@ -44,8 +44,10 @@ router.get("/fee-config", adminFeeConfigController.getAllFeeConfigs);
 router.post("/fee-config", adminFeeConfigController.setServiceFee);
 
 // Notifications Management
-router.get("/notifications", adminNotiController.getAllNotifications);
-router.get("/notifications/:id", adminNotiController.getNotificationById);
-router.post("/notifications", adminNotiController.createNotification);
+router.get('/notifications', adminNotiController.getAllNotifications);
+router.get('/notifications/:id', adminNotiController.getNotificationById);
+router.post('/notifications', adminNotiController.createNotification);
+router.delete('/notifications/:id', adminNotiController.deleteNotification);
+router.put('/notifications/:id', adminNotiController.updateNotification);
 
 module.exports = router;
