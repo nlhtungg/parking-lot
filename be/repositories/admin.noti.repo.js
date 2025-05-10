@@ -28,7 +28,18 @@ exports.createNotification = async (title, message, user_id) => {
 }
 
 exports.deleteNotification = async (id) => {
-    const query = `DELETE FROM Notifications WHERE id = $1 RETURNING *`;
+    const query = `DELETE FROM Notifications WHERE noti_id = $1 RETURNING *`;
     const result = await pool.query(query, [id]);
     return result.rows[0];
 }
+
+exports.updateNotification = async (id, title, message) => {
+    const query = `
+        UPDATE Notifications
+        SET title = $1, message = $2
+        WHERE noti_id = $3
+        RETURNING *
+    `;
+    const result = await pool.query(query, [title, message, id]);
+    return result.rows[0];
+};
