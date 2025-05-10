@@ -182,7 +182,7 @@ exports.initiateCheckout = async (req, res) => {
 
         // Calculate payment based on hours
         if (hours > 1) {
-            serviceFee = serviceFee + (hours - 1) * (serviceFee * 0.5);
+            serviceFee = serviceFee * hours;
         }
 
         totalAmount = serviceFee + penaltyFee;
@@ -257,13 +257,16 @@ exports.confirmCheckout = async (req, res) => {
         let totalAmount = 0;
         let sub_id = null;
         if (session.is_monthly) {
-            totalAmount = 0;
+            if(session.is_lost) {
+                totalAmount = session.penalty_fee;
+            }
+            else totalAmount = 0;
         } else {
             serviceFee = parseFloat(session.service_fee);
             if (hours <= 1) {
                 totalAmount = serviceFee;
             } else {
-                totalAmount = serviceFee + (hours - 1) * (serviceFee * 0.5);
+                totalAmount = serviceFee * hours;
             }
             if (session.is_lost && session.penalty_fee) {
                 totalAmount += parseFloat(session.penalty_fee);
