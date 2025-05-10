@@ -36,7 +36,7 @@ export async function checkInVehicle(sessionData) {
 // Initiate check-out process (Exit Stage 1) - Just gets preliminary information, no DB updates
 export async function initiateCheckout(sessionId) {
     const res = await api.get(`/employee/parking/exit/${sessionId}`);
-    return res.data;
+    return res;
 }
 
 // Confirm payment and complete check-out (Exit Stage 2) - Creates payment record and updates session

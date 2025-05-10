@@ -142,3 +142,9 @@ export async function fetchAllLostTickets() {
     const res = await api.get("/admin/lost-tickets");
     return res.data.data;
 }
+
+// Fetch a single lost ticket by session ID
+export async function fetchLostTicketBySessionId(sessionId) {
+    const res = await api.get(`/admin/lost-tickets/${sessionId}`);
+    return res.data.data;
+}

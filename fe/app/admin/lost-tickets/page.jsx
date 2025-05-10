@@ -37,11 +37,15 @@ export default function LostTicketsPage() {
         fetchLostTickets();
     }, []);
 
+    const handleDetail = (sessionId) => {
+        window.location.href = `/admin/lost-tickets/${sessionId}`;
+    };
+
     return (
         <div className="p-6">
             <PageHeader title="Lost Ticket Reports" />
             <div className="mt-6">
-                <DataTable columns={columns} data={data} loading={loading} error={error} />
+                <DataTable columns={columns} data={data} loading={loading} error={error} onDetail={handleDetail} />
             </div>
         </div>
     );

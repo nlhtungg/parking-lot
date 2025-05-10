@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { initiateCheckout, confirmCheckout, reportLostTicket } from "@/app/api/employee.client";
 import PageHeader from "@/app/components/common/PageHeader";
 import { useToast } from "@/app/components/providers/ToastProvider";
@@ -16,8 +16,9 @@ import {
     FaExclamationTriangle,
 } from "react-icons/fa";
 
-export default function PaymentDetailsPage({ params }) {
-    const { sessionid } = params;
+export default function PaymentDetailsPage() {
+    const params = useParams();
+    const sessionid = params.sessionid;
     const toast = useToast();
     const router = useRouter();
 
@@ -45,17 +46,22 @@ export default function PaymentDetailsPage({ params }) {
         setLoading(true);
         initiateCheckout(sessionid)
             .then((result) => {
+                if (!result?.data) throw new Error("No data received");
+                const data = result.data;
                 setCheckout({
-                    amount: result.amount,
-                    hours: result.hours,
-                    serviceFee: result.serviceFee,
-                    penaltyFee: result.penaltyFee,
-                    session: result.session_details,
+                    amount: data.amount,
+                    hours: data.hours,
+                    serviceFee: data.serviceFee,
+                    penaltyFee: data.penaltyFee,
+                    session: data.session_details,
                 });
-                setLiveHours(result.hours);
+                setLiveHours(data.hours);
             })
             .catch((err) => {
-                setError(err.response?.data?.message || "Failed to load payment details");
+                console.error("Checkout error:", err);
+                const errorMsg = err.response?.data?.message || err.message || "Failed to load payment details";
+                setError(errorMsg);
+                toast.error(errorMsg);
             })
             .finally(() => setLoading(false));
     }, [sessionid]);

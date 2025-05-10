@@ -33,6 +33,7 @@ router.post("/parking-lots", adminLotsController.createParkingLot);
 router.put("/parking-lots/:id", adminLotsController.updateParkingLot);
 router.delete("/parking-lots/:id", adminLotsController.deleteParkingLot);
 router.get("/lost-tickets", adminLotsController.getAllLostTicketReports);
+router.get("/lost-tickets/:id", adminLotsController.getAllLostTicketReports);
 
 // Monthly Subs Management
 router.get("/monthly-subs", adminMonthlySubsController.getAllMonthlySubs);
@@ -44,10 +45,10 @@ router.get("/fee-config", adminFeeConfigController.getAllFeeConfigs);
 router.post("/fee-config", adminFeeConfigController.setServiceFee);
 
 // Notifications Management
-router.get('/notifications', adminNotiController.getAllNotifications);
-router.get('/notifications/:id', adminNotiController.getNotificationById);
-router.post('/notifications', adminNotiController.createNotification);
-router.delete('/notifications/:id', adminNotiController.deleteNotification);
-router.put('/notifications/:id', adminNotiController.updateNotification);
+router.get("/notifications", adminNotiController.getAllNotifications);
+router.get("/notifications/:id", adminNotiController.getNotificationById);
+router.post("/notifications", adminNotiController.createNotification);
+router.delete("/notifications/:id", adminNotiController.deleteNotification);
+router.put("/notifications/:id", adminNotiController.updateNotification);
 
 module.exports = router;
