@@ -2,16 +2,17 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/common/DataTable";
 import PageHeader from "../../components/common/PageHeader";
+import { fetchAllLostTickets } from "../../api/admin.client";
 
 const columns = [
-    { Header: "Session ID", accessor: "session_id" },
-    { Header: "License Plate", accessor: "license_plate" },
-    { Header: "Vehicle Type", accessor: "vehicle_type" },
-    { Header: "Lot ID", accessor: "lot_id" },
-    { Header: "Time In", accessor: "time_in" },
-    { Header: "Time Out", accessor: "time_out" },
-    { Header: "Penalty Fee", accessor: "penalty_fee" },
-    { Header: "Created At", accessor: "created_at" },
+    { key: "session_id", label: "Session ID" },
+    { key: "license_plate", label: "License Plate" },
+    { key: "vehicle_type", label: "Vehicle Type" },
+    { key: "lot_id", label: "Lot ID" },
+    { key: "time_in", label: "Time In" },
+    { key: "time_out", label: "Time Out" },
+    { key: "penalty_fee", label: "Penalty Fee" },
+    { key: "guest_phone", label: "Guest Phone" },
 ];
 
 export default function LostTicketsPage() {
@@ -24,13 +25,9 @@ export default function LostTicketsPage() {
             try {
                 setLoading(true);
                 setError(null);
-                const res = await fetch("/api/admin/lost-tickets");
-                const json = await res.json();
-                if (json.success) {
-                    setData(json.data);
-                } else {
-                    setError(json.message || "Failed to fetch lost tickets");
-                }
+                const data = await fetchAllLostTickets();
+                setData(data);
+                console.log(data);
             } catch (err) {
                 setError("Failed to fetch lost tickets");
             } finally {

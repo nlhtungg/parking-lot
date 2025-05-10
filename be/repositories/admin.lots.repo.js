@@ -107,10 +107,9 @@ exports.getParkingLotByManager = async (managerId) => {
 // Fetch all lost ticket reports
 exports.getAllLostTicketReports = async () => {
     const query = `
-        SELECT ltr.*, ps.license_plate, ps.vehicle_type, ps.lot_id, ps.time_in, ps.time_out
+        SELECT ps.*, ltr.*
         FROM LostTicketReport ltr
-        JOIN ParkingSessions ps ON ltr.session_id = ps.session_id
-        ORDER BY ltr.created_at DESC
+        JOIN ParkingSessions ps ON ltr.session_id = ps.session_id;
     `;
     const result = await pool.query(query);
     return result.rows;

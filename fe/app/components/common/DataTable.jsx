@@ -67,7 +67,17 @@ export default function DataTable({
                                         key={`${item[idField]}-${column.key}`}
                                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                                     >
-                                        {item[column.key]}
+                                        {column.key === "guest_identification" &&
+                                        typeof item[column.key] === "string" &&
+                                        item[column.key].startsWith("data:image") ? (
+                                            <img
+                                                src={item[column.key]}
+                                                alt="Guest ID"
+                                                className="max-h-24 max-w-xs rounded border"
+                                            />
+                                        ) : (
+                                            item[column.key]
+                                        )}
                                     </td>
                                 ))}
                                 {actions.length > 0 && (

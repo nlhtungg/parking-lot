@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { initiateCheckout, confirmCheckout } from "@/app/api/employee.client";
+import { initiateCheckout, confirmCheckout, reportLostTicket } from "@/app/api/employee.client";
 import PageHeader from "@/app/components/common/PageHeader";
 import { useToast } from "@/app/components/providers/ToastProvider";
 import {
@@ -12,6 +12,8 @@ import {
     FaCreditCard,
     FaCheckCircle,
     FaSync,
+    FaIdCard,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 
 export default function PaymentDetailsPage({ params }) {
@@ -32,6 +34,11 @@ export default function PaymentDetailsPage({ params }) {
     const [paymentMethod, setPaymentMethod] = useState("CASH");
     const [liveHours, setLiveHours] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [showLostTicketForm, setShowLostTicketForm] = useState(false);
+    const [guestIdImage, setGuestIdImage] = useState(null);
+    const [guestPhone, setGuestPhone] = useState("");
+    const [isLostTicket, setIsLostTicket] = useState(false);
+    const [reportingLost, setReportingLost] = useState(false);
 
     useEffect(() => {
         if (!sessionid) return;
@@ -99,6 +106,31 @@ export default function PaymentDetailsPage({ params }) {
         }
     };
 
+    const handleLostTicketToggle = () => {
+        setShowLostTicketForm((prev) => !prev);
+        setIsLostTicket((prev) => !prev);
+        // Reset form fields if closing
+        if (showLostTicketForm) {
+            setGuestIdImage(null);
+            setGuestPhone("");
+        }
+    };
+
+    const handleIdImageChange = (e) => {
+        setGuestIdImage(e.target.files[0]);
+    };
+
+    const handleGuestPhoneChange = (e) => {
+        setGuestPhone(e.target.value);
+    };
+
+    const getTotalAmount = () => {
+        if (isLostTicket) {
+            return (checkout.amount || 0) + (checkout.penaltyFee || 0);
+        }
+        return checkout.amount;
+    };
+
     const formatDateTime = (dateStr) => {
         if (!dateStr) return "N/A";
         const date = new Date(dateStr);
@@ -112,6 +144,39 @@ export default function PaymentDetailsPage({ params }) {
         }).format(amount);
     };
 
+    const handleLostTicketSubmit = async (e) => {
+        e.preventDefault();
+        if (!guestIdImage || !guestPhone) {
+            toast.error("Please provide both ID card photo and phone number");
+            return;
+        }
+        setReportingLost(true);
+        try {
+            // Convert image to base64 (or use FormData if backend expects file)
+            const toBase64 = (file) =>
+                new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+            const guest_identification = await toBase64(guestIdImage);
+            await reportLostTicket({
+                session_id: sessionid,
+                guest_identification,
+                guest_phone: guestPhone,
+            });
+            toast.success("Lost ticket reported. Penalty fee applied.");
+            setShowLostTicketForm(false);
+            setIsLostTicket(true);
+            window.location.reload();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to report lost ticket");
+        } finally {
+            setReportingLost(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading...</div>;
     if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
     if (!checkout.session) return null;
@@ -119,6 +184,63 @@ export default function PaymentDetailsPage({ params }) {
     return (
         <div className="container mx-auto p-6">
             <PageHeader title="Payment Details" />
+            <div className="flex justify-end mb-4">
+                <button
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium border transition ${
+                        showLostTicketForm
+                            ? "bg-yellow-100 border-yellow-500 text-yellow-800"
+                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                    onClick={handleLostTicketToggle}
+                >
+                    <FaExclamationTriangle className="mr-2" />
+                    {showLostTicketForm ? "Cancel Lost Ticket Report" : "Report Lost Ticket"}
+                </button>
+            </div>
+            {showLostTicketForm && (
+                <form
+                    className="bg-yellow-50 border border-yellow-400 rounded-lg p-4 mb-6"
+                    onSubmit={handleLostTicketSubmit}
+                >
+                    <div className="mb-2 flex items-center text-yellow-800">
+                        <FaIdCard className="mr-2" />
+                        <span className="font-semibold">Lost Ticket Report</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Guest ID Card Photo</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleIdImageChange}
+                                className="block w-full text-sm text-gray-700"
+                            />
+                            {guestIdImage && (
+                                <span className="text-xs text-gray-500 mt-1 block">{guestIdImage.name}</span>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Guest Phone</label>
+                            <input
+                                type="tel"
+                                value={guestPhone}
+                                onChange={handleGuestPhoneChange}
+                                className="block w-full border border-gray-300 rounded-md p-2 text-gray-800 text-sm"
+                                placeholder="Enter guest phone number"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button
+                            type="submit"
+                            disabled={reportingLost}
+                            className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                        >
+                            {reportingLost ? "Reporting..." : "Submit Lost Ticket Report"}
+                        </button>
+                    </div>
+                </form>
+            )}
             <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
                 <div className="bg-blue-600 text-white px-6 py-4">
                     <h2 className="text-xl font-semibold flex items-center">
@@ -198,7 +320,7 @@ export default function PaymentDetailsPage({ params }) {
                                 <div className="flex justify-between font-medium">
                                     <span className="text-sm text-gray-700">Payment Amount:</span>
                                     <span className="text-lg text-green-600 font-bold">
-                                        {formatCurrency(checkout.amount)}
+                                        {formatCurrency(getTotalAmount())}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
@@ -295,7 +417,7 @@ export default function PaymentDetailsPage({ params }) {
                         </button>
                         <button
                             onClick={handleConfirmPayment}
-                            disabled={loading}
+                            disabled={loading || (showLostTicketForm && !isLostTicket)}
                             className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 flex items-center"
                         >
                             {loading ? (

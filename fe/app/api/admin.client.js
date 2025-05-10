@@ -93,6 +93,7 @@ export async function deleteMonthlySub(id) {
     return res.data.data;
 }
 
+// ===================== FEES =====================
 // Client: Fetch all fee configurations
 export async function fetchFeeConfigurations() {
     const res = await api.get("/admin/fee-config");
@@ -110,6 +111,7 @@ export async function updateFeeConfiguration(fee) {
     return res.data.data;
 }
 
+// ===================== NOTIFICATIONS =====================
 // Client: Fetch all notifications
 export async function fetchNotifications() {
     const res = await api.get("/admin/notifications");
@@ -125,5 +127,12 @@ export async function fetchNotificationById(id) {
 // Client: Add a new notification
 export async function addNotification(notification) {
     const res = await api.post("/admin/notifications", notification);
+    return res.data.data;
+}
+
+// ===================== LOST TICKETS =====================
+// Fetch all lost ticket reports
+export async function fetchAllLostTickets() {
+    const res = await api.get("/admin/lost-tickets");
     return res.data.data;
 }
