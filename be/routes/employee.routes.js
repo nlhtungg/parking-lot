@@ -25,6 +25,7 @@ router.get("/parking-lots", lotsController.getAllParkingLots);
 // Parking sessions routes
 router.get("/parking-sessions", sessionsController.getActiveSessions);
 router.post("/parking-sessions", sessionsController.checkInVehicle);
+router.post("/lost-tickets", sessionsController.reportLostTicket);
 
 // New entry/exit API endpoints
 router.post("/parking/entry", sessionsController.checkInVehicle);
