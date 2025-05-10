@@ -12,6 +12,9 @@ async function hashPassword(password) {
 }
 
 async function verifyPassword(password, hashedPassword) {
+    if (!password || !hashedPassword) {
+        throw new Error('Both password and hashedPassword are required');
+    }
     try {
         const match = await bcrypt.compare(password, hashedPassword);
         return match;

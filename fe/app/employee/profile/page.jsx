@@ -32,6 +32,8 @@ const ProfilePage = () => {
     };
 
     const handleEditClick = () => {
+        if (!profile) return; // Ensure profile is not null before accessing its properties
+
         setFormData({
             full_name: profile.full_name,
             current_password: "",
@@ -60,14 +62,14 @@ const ProfilePage = () => {
     };
 
     const isSaveDisabled =
-        formData.full_name === profile.full_name && !formData.new_password;
+        profile && formData.full_name === profile.full_name && !formData.new_password;
 
     if (error) {
         return <div className="text-red-500">{error}</div>;
     }
 
     if (!profile) {
-        return <div>Loading...</div>;
+        return <div>Loading profile...</div>; // Display a loading message if profile is null
     }
 
     return (
