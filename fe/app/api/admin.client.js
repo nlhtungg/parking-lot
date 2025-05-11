@@ -93,6 +93,13 @@ export async function deleteMonthlySub(id) {
     return res.data.data;
 }
 
+// ===================== PAYMENTS =====================
+// Fetch all payments
+export async function fetchAllPayments() {
+    const res = await api.get("/admin/payments");
+    return res.data.data;
+}
+
 // ===================== FEES =====================
 // Client: Fetch all fee configurations
 export async function fetchFeeConfigurations() {

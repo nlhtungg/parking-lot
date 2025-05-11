@@ -7,6 +7,7 @@ const adminUsersController = require("../controllers/admin.users.controller");
 const adminLotsController = require("../controllers/admin.lots.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const adminMonthlySubsController = require("../controllers/admin.monthlysubs.controller");
+const adminPaymentController = require("../controllers/admin.payment.controller");
 const adminFeeConfigController = require("../controllers/admin.feeConfig.controller");
 const adminNotiController = require("../controllers/admin.noti.controller");
 
@@ -39,6 +40,9 @@ router.get("/lost-tickets/:id", adminLotsController.getAllLostTicketReports);
 router.get("/monthly-subs", adminMonthlySubsController.getAllMonthlySubs);
 router.post("/monthly-subs", adminMonthlySubsController.createMonthlySub);
 router.delete("/monthly-subs/:id", adminMonthlySubsController.deleteMonthlySub);
+
+// Payments Management
+router.get("/payments", adminPaymentController.getAllPayments);
 
 // Fee Configurations
 router.get("/fee-config", adminFeeConfigController.getAllFeeConfigs);
