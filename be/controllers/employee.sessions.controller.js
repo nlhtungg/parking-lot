@@ -111,7 +111,7 @@ exports.checkInVehicle = async (req, res) => {
             is_monthly: newSession.is_monthly,
             lot_id: newSession.lot_id,
             lot_name: parkingLot.lot_name,
-            qr_code: `PK-${newSession.session_id}-${Date.now()}`, // Simplified QR code data
+            //qr_code: `PK-${newSession.session_id}-${Date.now()}`, // Simplified QR code data
         };
 
         res.status(201).json({

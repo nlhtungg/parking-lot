@@ -250,13 +250,6 @@ export default function CheckInPage() {
                             </div>
                         </div>
 
-                        <div className="mt-6 p-4 bg-gray-50 rounded-md">
-                            <p className="text-sm text-gray-500 mb-2">QR Code</p>
-                            <p className="font-mono text-xs bg-white p-3 rounded border border-gray-200">
-                                {ticket.qr_code}
-                            </p>
-                        </div>
-
                         <div className="mt-4 p-4 bg-green-50 rounded-md text-green-800 text-sm">
                             <p>
                                 This ticket has been successfully created and the vehicle has been checked in. Please
