@@ -98,8 +98,8 @@ export function useMonthlySubs() {
 
     // Vehicle type options for dropdown
     const vehicleTypeOptions = [
-        { value: "Car", label: "Car" },
-        { value: "Bike", label: "Bike" },
+        { value: "car", label: "Car" },
+        { value: "bike", label: "Bike" },
     ];
 
     // Column definitions for the table
