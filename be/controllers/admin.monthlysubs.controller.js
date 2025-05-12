@@ -58,7 +58,7 @@ exports.createMonthlySub = async (req, res) => {
             owner_phone 
         });
         
-        const monthlyFee = await feeRepo.getServiceFee('Monthly', vehicle_type);
+        const monthlyFee = await feeRepo.getServiceFee('monthly', vehicle_type);
 
         const subPayment = await paymentsRepo.createMonthlyPayment({
             sub_id: newMonthlySub.sub_id,

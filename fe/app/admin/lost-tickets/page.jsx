@@ -5,14 +5,15 @@ import PageHeader from "../../components/common/PageHeader";
 import { fetchAllLostTickets } from "../../api/admin.client";
 
 const columns = [
+    //{ key: "reportid", label: "Report ID" },
     { key: "session_id", label: "Session ID" },
     { key: "license_plate", label: "License Plate" },
     { key: "vehicle_type", label: "Vehicle Type" },
-    { key: "lot_id", label: "Lot ID" },
-    { key: "time_in", label: "Time In" },
-    { key: "time_out", label: "Time Out" },
+    //{ key: "lot_id", label: "Lot ID" },
+    //{ key: "time_in", label: "Time In" },
+    //{ key: "time_out", label: "Time Out" },
     { key: "penalty_fee", label: "Penalty Fee" },
-    { key: "guest_phone", label: "Guest Phone" },
+    //{ key: "guest_phone", label: "Guest Phone" },
 ];
 
 export default function LostTicketsPage() {
@@ -37,8 +38,8 @@ export default function LostTicketsPage() {
         fetchLostTickets();
     }, []);
 
-    const handleDetail = (sessionId) => {
-        window.location.href = `/admin/lost-tickets/${sessionId}`;
+    const handleDetail = (session_id) => {
+        window.location.href = `/admin/lost-tickets/${session_id}`;
     };
 
     return (
