@@ -10,7 +10,7 @@ export function useMonthlySubs() {
 
     const [form, setForm] = useState({
         license_plate: "",
-        vehicle_type: "Car",
+        vehicle_type: "car",
         start_date: "",
         months: 1,
         owner_name: "",
@@ -76,7 +76,7 @@ export function useMonthlySubs() {
     const resetForm = () => {
         setForm({
             license_plate: "",
-            vehicle_type: "Car",
+            vehicle_type: "car",
             start_date: "",
             months: 1,
             owner_name: "",

@@ -63,7 +63,7 @@ exports.createMonthlySub = async (req, res) => {
         const subPayment = await paymentsRepo.createMonthlyPayment({
             sub_id: newMonthlySub.sub_id,
             payment_date : today,
-            payment_method: 'Cash',
+            payment_method: 'CASH',
             total_amount: months * monthlyFee
         })
 

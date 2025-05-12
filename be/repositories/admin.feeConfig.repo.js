@@ -9,6 +9,9 @@ exports.getAllFeeConfigs = async () => {
 exports.getServiceFee = async (ticket_type, vehicle_type) => {
     const query = `SELECT * FROM FeeConfigs WHERE ticket_type = $1 AND vehicle_type = $2`;
     const result = await pool.query(query, [ticket_type, vehicle_type]);
+    //console.log('ticket_type:', ticket_type);
+    //console.log('vehicle_type:', vehicle_type);
+    //console.log('result:', result.rows[0]);
     return result.rows[0].service_fee;
 }
 
