@@ -1,7 +1,7 @@
 const subsRepo = require('../repositories/admin.monthlysubs.repo');
 const paymentsRepo = require('../repositories/admin.payments.repo');
 const feeRepo = require('../repositories/admin.feeConfig.repo');
-const {getToday, getDayAfterMonths} = require('../utils/date');
+const {getCurrentTime, getDayAfterMonths} = require('../utils/date');
 
 exports.getAllMonthlySubs = async (req, res) => {
     try {
@@ -27,18 +27,19 @@ exports.createMonthlySub = async (req, res) => {
             start_date,
             months,
             owner_name,
-            owner_phone 
+            owner_phone,
+            payment_method 
         } = req.body;
 
         // Validate required fields
-        if (!license_plate || !vehicle_type || !start_date || !months || !owner_name || !owner_phone) {
+        if (!license_plate || !vehicle_type || !start_date || !months || !owner_name || !owner_phone || !payment_method) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
             });
         }
 
-        const today = getToday();
+        const now = getCurrentTime();
         const end_date = getDayAfterMonths(start_date, months);
         const exist = await subsRepo.checkExistingSub(license_plate,start_date, end_date);
         console.log('exist:', exist);
@@ -62,8 +63,8 @@ exports.createMonthlySub = async (req, res) => {
 
         const subPayment = await paymentsRepo.createMonthlyPayment({
             sub_id: newMonthlySub.sub_id,
-            payment_date : today,
-            payment_method: 'CASH',
+            payment_date : now,
+            payment_method: payment_method,
             total_amount: months * monthlyFee
         })
 

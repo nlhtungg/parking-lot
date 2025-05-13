@@ -16,6 +16,7 @@ export default function MonthlySubsPage() {
         showForm,
         searchQuery,
         vehicleTypeOptions,
+        paymentMethodOptions,
         columns,
         setShowForm,
         setError,
@@ -68,7 +69,12 @@ export default function MonthlySubsPage() {
                 onSubmit={handleSubmit}
                 submitText="Add"
             >
-                <MonthlySubForm form={form} onChange={handleChange} vehicleTypeOptions={vehicleTypeOptions} />
+                <MonthlySubForm 
+                    form={form} 
+                    onChange={handleChange} 
+                    vehicleTypeOptions={vehicleTypeOptions}
+                    paymentMethodOptions={paymentMethodOptions}
+                />
             </Modal>
         </>
     );
