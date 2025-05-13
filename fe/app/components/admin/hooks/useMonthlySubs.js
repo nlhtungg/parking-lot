@@ -5,8 +5,10 @@ import { fetchAllMonthlySubs, createMonthlySub, deleteMonthlySub } from "../../.
 
 export function useMonthlySubs() {
     const [subs, setSubs] = useState([]);
+    const [filteredSubs, setFilteredSubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [form, setForm] = useState({
         license_plate: "",
@@ -25,12 +27,35 @@ export function useMonthlySubs() {
         fetchAll();
     }, []);
 
+    // Filter subscriptions when searchQuery or subs changes
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredSubs(subs);
+            return;
+        }
+        
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = subs.filter(sub => 
+            sub.license_plate.toLowerCase().includes(lowercasedQuery) || 
+            sub.vehicle_type.toLowerCase().includes(lowercasedQuery) ||
+            sub.owner_name.toLowerCase().includes(lowercasedQuery) ||
+            sub.owner_phone.toLowerCase().includes(lowercasedQuery)
+        );
+        setFilteredSubs(results);
+    }, [searchQuery, subs]);
+
+    // Handle search change
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
     // Fetch all monthly subscriptions
     const fetchAll = async () => {
         setLoading(true);
         try {
             const data = await fetchAllMonthlySubs();
             setSubs(data);
+            setFilteredSubs(data);
         } catch (err) {
             setError("Failed to fetch monthly subscriptions");
         } finally {
@@ -113,17 +138,20 @@ export function useMonthlySubs() {
     ];
 
     return {
-        subs,
+        subs: filteredSubs, // return filtered subscriptions instead of all subs
+        allSubs: subs, // original unfiltered data
         loading,
         error,
         form,
         formLoading,
         showForm,
+        searchQuery,
         vehicleTypeOptions,
         columns,
         setShowForm,
         setError,
         handleChange,
+        handleSearchChange,
         handleSubmit,
         handleDelete,
         resetForm,

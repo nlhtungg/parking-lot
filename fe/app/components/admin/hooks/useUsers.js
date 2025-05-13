@@ -5,8 +5,10 @@ import { fetchAllUsers, createUser, updateUser, deleteUser } from "../../../api/
 import toast from "react-hot-toast";
 export function useUsers() {
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [form, setForm] = useState({
         username: "",
@@ -31,6 +33,22 @@ export function useUsers() {
     useEffect(() => {
         fetchAllData();
     }, []);
+
+    // Filter users when searchQuery or users changes
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredUsers(users);
+            return;
+        }
+        
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = users.filter(user => 
+            user.username.toLowerCase().includes(lowercasedQuery) || 
+            user.full_name.toLowerCase().includes(lowercasedQuery) ||
+            user.role.toLowerCase().includes(lowercasedQuery)
+        );
+        setFilteredUsers(results);
+    }, [searchQuery, users]);
 
     // Fetch all users
     const fetchAllData = async () => {
@@ -123,6 +141,11 @@ export function useUsers() {
         }
     };
 
+    // Handle search change
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
     // Role options for dropdown
     const roleOptions = [
         { value: "", label: "Select Role" },
@@ -138,7 +161,8 @@ export function useUsers() {
     ];
 
     return {
-        users,
+        users: filteredUsers, // return filtered users instead of all users
+        allUsers: users, // original unfiltered data
         loading,
         error,
         form,
@@ -146,6 +170,7 @@ export function useUsers() {
         formLoading,
         showForm,
         showEditForm,
+        searchQuery,
         roleOptions,
         columns,
         setShowForm,
@@ -157,5 +182,6 @@ export function useUsers() {
         handleEditSubmit,
         handleEdit,
         handleDelete,
+        handleSearchChange,
     };
 }

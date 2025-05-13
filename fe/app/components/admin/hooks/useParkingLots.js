@@ -11,8 +11,10 @@ import {
 
 export function useParkingLots() {
     const [lots, setLots] = useState([]);
+    const [filteredLots, setFilteredLots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [form, setForm] = useState({
         lot_name: "",
@@ -37,6 +39,21 @@ export function useParkingLots() {
     useEffect(() => {
         fetchAllLots();
     }, []);
+
+    // Filter lots when searchQuery or lots changes
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredLots(lots);
+            return;
+        }
+        
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = lots.filter(lot => 
+            lot.lot_name.toLowerCase().includes(lowercasedQuery) || 
+            (lot.manager_username && lot.manager_username.toLowerCase().includes(lowercasedQuery))
+        );
+        setFilteredLots(results);
+    }, [searchQuery, lots]);
 
     // Fetch users for manager dropdown
     useEffect(() => {
@@ -149,6 +166,11 @@ export function useParkingLots() {
         }
     };
 
+    // Handle search change
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
     // Manager options for dropdown
     const managerOptions = [
         { value: "", label: "None" },
@@ -164,7 +186,8 @@ export function useParkingLots() {
     ];
 
     return {
-        lots,
+        lots: filteredLots, // return filtered lots instead of all lots
+        allLots: lots, // original unfiltered data
         loading,
         error,
         form,
@@ -172,6 +195,7 @@ export function useParkingLots() {
         formLoading,
         showForm,
         showEditForm,
+        searchQuery,
         managerOptions,
         columns,
         setShowForm,
@@ -184,5 +208,6 @@ export function useParkingLots() {
         handleEdit,
         handleDetail,
         handleDelete,
+        handleSearchChange,
     };
 }
