@@ -6,7 +6,7 @@ import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { useRouter } from "next/navigation";
 import DataTable from "../../components/common/DataTable";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { FaSearch, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function CheckOutPage() {
     const toast = useToast();
@@ -15,16 +15,23 @@ export default function CheckOutPage() {
     const [activeSessions, setActiveSessions] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [lastRefreshed, setLastRefreshed] = useState(Date.now());
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+    });
 
     useEffect(() => {
         loadActiveSessions();
-    }, [lastRefreshed]);
+    }, [lastRefreshed, pagination.page]);
 
     const loadActiveSessions = async () => {
         setLoading(true);
         try {
-            const data = await fetchActiveSessions();
+            const data = await fetchActiveSessions(pagination.page, pagination.limit);
             setActiveSessions(data.sessions || []);
+            setPagination(data.pagination);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to load sessions");
         } finally {
@@ -83,6 +90,10 @@ export default function CheckOutPage() {
         router.push(`/employee/checkout/${sessionId}`);
     };
 
+    const handlePageChange = (newPage) => {
+        setPagination((prev) => ({ ...prev, page: newPage }));
+    };
+
     return (
         <div className="container mx-auto p-6">
             <PageHeader title="Check-Out Vehicle" />
@@ -112,6 +123,91 @@ export default function CheckOutPage() {
                 onDetail={handleDetail}
                 idField="session_id"
             />
+
+            {/* Pagination Controls */}
+            {pagination.totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                    <div className="flex flex-1 justify-between sm:hidden">
+                        <button
+                            onClick={() => handlePageChange(pagination.page - 1)}
+                            disabled={pagination.page === 1}
+                            className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium ${
+                                pagination.page === 1
+                                    ? "text-gray-300 cursor-not-allowed"
+                                    : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(pagination.page + 1)}
+                            disabled={pagination.page === pagination.totalPages}
+                            className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium ${
+                                pagination.page === pagination.totalPages
+                                    ? "text-gray-300 cursor-not-allowed"
+                                    : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Showing{" "}
+                                <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
+                                <span className="font-medium">
+                                    {Math.min(pagination.page * pagination.limit, pagination.total)}
+                                </span>{" "}
+                                of <span className="font-medium">{pagination.total}</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav
+                                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                                aria-label="Pagination"
+                            >
+                                <button
+                                    onClick={() => handlePageChange(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                    className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                        pagination.page === 1 ? "cursor-not-allowed" : "hover:bg-gray-50"
+                                    }`}
+                                >
+                                    <span className="sr-only">Previous</span>
+                                    <FaChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                                {/* Page numbers */}
+                                {[...Array(pagination.totalPages)].map((_, idx) => (
+                                    <button
+                                        key={idx + 1}
+                                        onClick={() => handlePageChange(idx + 1)}
+                                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                            pagination.page === idx + 1
+                                                ? "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                                : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                                        }`}
+                                    >
+                                        {idx + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => handlePageChange(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.totalPages}
+                                    className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                        pagination.page === pagination.totalPages
+                                            ? "cursor-not-allowed"
+                                            : "hover:bg-gray-50"
+                                    }`}
+                                >
+                                    <span className="sr-only">Next</span>
+                                    <FaChevronRight className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -7,6 +7,7 @@ const adminUsersController = require("../controllers/admin.users.controller");
 const adminLotsController = require("../controllers/admin.lots.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const adminMonthlySubsController = require("../controllers/admin.monthlysubs.controller");
+const adminPaymentController = require("../controllers/admin.payments.controller");
 const adminFeeConfigController = require("../controllers/admin.feeConfig.controller");
 const adminNotiController = require("../controllers/admin.noti.controller");
 

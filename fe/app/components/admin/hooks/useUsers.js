@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchAllUsers, createUser, updateUser, deleteUser } from "../../../api/admin.client";
+import { fetchUsers, addUser, updateUser, deleteUser } from "../../../api/admin.client";
 import toast from "react-hot-toast";
+
 export function useUsers() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+    });
 
     const [form, setForm] = useState({
         username: "",
@@ -27,17 +35,35 @@ export function useUsers() {
     const [showForm, setShowForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
 
-    // Fetch users on mount
+    // Fetch users on mount and when page changes
     useEffect(() => {
         fetchAllData();
-    }, []);
+    }, [pagination.page]);
+
+    // Filter users when searchQuery or users changes
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredUsers(users);
+            return;
+        }
+
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = users.filter(
+            (user) =>
+                user.username.toLowerCase().includes(lowercasedQuery) ||
+                user.full_name.toLowerCase().includes(lowercasedQuery) ||
+                user.role.toLowerCase().includes(lowercasedQuery)
+        );
+        setFilteredUsers(results);
+    }, [searchQuery, users]);
 
     // Fetch all users
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const data = await fetchAllUsers();
-            setUsers(data);
+            const response = await fetchUsers(pagination.page, pagination.limit);
+            setUsers(response.data);
+            setPagination(response.pagination);
         } catch (err) {
             setError("Failed to fetch users");
         } finally {
@@ -123,6 +149,16 @@ export function useUsers() {
         }
     };
 
+    // Handle search change
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    // Handle page change
+    const handlePageChange = (newPage) => {
+        setPagination((prev) => ({ ...prev, page: newPage }));
+    };
+
     // Role options for dropdown
     const roleOptions = [
         { value: "", label: "Select Role" },
@@ -148,6 +184,7 @@ export function useUsers() {
         showEditForm,
         roleOptions,
         columns,
+        pagination,
         setShowForm,
         setShowEditForm,
         setError,
@@ -157,5 +194,7 @@ export function useUsers() {
         handleEditSubmit,
         handleEdit,
         handleDelete,
+        handleSearchChange,
+        handlePageChange,
     };
 }

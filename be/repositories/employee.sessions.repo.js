@@ -291,18 +291,12 @@ exports.createAndConfirmPayment = async (paymentData) => {
 exports.createAndConfirmPayment = async (paymentData) => {
     // Start a transaction
     const client = await pool.connect();
-    
+
     try {
-        await client.query('BEGIN');
-        
-        const {
-            session_id,
-            sub_id,
-            total_amount,
-            payment_method,
-            is_lost
-        } = paymentData;
-        
+        await client.query("BEGIN");
+
+        const { session_id, sub_id, total_amount, payment_method, is_lost } = paymentData;
+
         // Create the payment
         const createPaymentQuery = `
             INSERT INTO Payment (
@@ -314,23 +308,23 @@ exports.createAndConfirmPayment = async (paymentData) => {
             ) VALUES ($1, $2, $3, $4, NOW())
             RETURNING *
         `;
-        
+
         const paymentResult = await client.query(createPaymentQuery, [
             session_id,
             sub_id || null,
             payment_method,
-            total_amount
+            total_amount,
         ]);
-        
+
         // Get session details
         const sessionQuery = `
             SELECT * FROM ParkingSessions
             WHERE session_id = $1
         `;
-        
+
         const sessionResult = await client.query(sessionQuery, [session_id]);
         const session = sessionResult.rows[0];
-        
+
         // Update the session with time_out and parking_fee
         const updateSessionQuery = `
             UPDATE ParkingSessions
@@ -341,25 +335,25 @@ exports.createAndConfirmPayment = async (paymentData) => {
             WHERE session_id = $3
             RETURNING *
         `;
-        
+
         const updatedSessionResult = await client.query(updateSessionQuery, [
             is_lost || false,
             total_amount,
-            session_id
+            session_id,
         ]);
-        
+
         // Update the parking lot vehicle count
-        const column = session.vehicle_type.toLowerCase() === 'car' ? 'current_car' : 'current_bike';
-        
+        const column = session.vehicle_type.toLowerCase() === "car" ? "current_car" : "current_bike";
+
         const updateLotQuery = `
             UPDATE ParkingLots
             SET ${column} = GREATEST(${column} - 1, 0)
             WHERE lot_id = $1
             RETURNING *
         `;
-        
+
         await client.query(updateLotQuery, [session.lot_id]);
-        
+
         // If lost ticket, create a report
         if (is_lost) {
             const lostTicketQuery = `
@@ -370,26 +364,23 @@ exports.createAndConfirmPayment = async (paymentData) => {
                     penalty_fee
                 ) VALUES ($1, 'UNKNOWN', 'UNKNOWN', $2)
             `;
-            
+
             // Use the penalty fee from the fee config or a default value
             const penaltyFee = session.penalty_fee || 50000;
-            
-            await client.query(lostTicketQuery, [
-                session_id,
-                penaltyFee
-            ]);
+
+            await client.query(lostTicketQuery, [session_id, penaltyFee]);
         }
-        
+
         // Commit the transaction
-        await client.query('COMMIT');
-        
+        await client.query("COMMIT");
+
         return {
             payment: paymentResult.rows[0],
-            session: updatedSessionResult.rows[0]
+            session: updatedSessionResult.rows[0],
         };
     } catch (error) {
         // Rollback in case of error
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw error;
     } finally {
         // Release the client
@@ -400,18 +391,12 @@ exports.createAndConfirmPayment = async (paymentData) => {
 exports.createAndConfirmPayment = async (paymentData) => {
     // Start a transaction
     const client = await pool.connect();
-    
+
     try {
-        await client.query('BEGIN');
-        
-        const {
-            session_id,
-            sub_id,
-            total_amount,
-            payment_method,
-            is_lost
-        } = paymentData;
-        
+        await client.query("BEGIN");
+
+        const { session_id, sub_id, total_amount, payment_method, is_lost } = paymentData;
+
         // Create the payment
         const createPaymentQuery = `
             INSERT INTO Payment (
@@ -423,23 +408,23 @@ exports.createAndConfirmPayment = async (paymentData) => {
             ) VALUES ($1, $2, $3, $4, NOW())
             RETURNING *
         `;
-        
+
         const paymentResult = await client.query(createPaymentQuery, [
             session_id,
             sub_id || null,
             payment_method,
-            total_amount
+            total_amount,
         ]);
-        
+
         // Get session details
         const sessionQuery = `
             SELECT * FROM ParkingSessions
             WHERE session_id = $1
         `;
-        
+
         const sessionResult = await client.query(sessionQuery, [session_id]);
         const session = sessionResult.rows[0];
-        
+
         // Update the session with time_out and parking_fee
         const updateSessionQuery = `
             UPDATE ParkingSessions
@@ -450,25 +435,25 @@ exports.createAndConfirmPayment = async (paymentData) => {
             WHERE session_id = $3
             RETURNING *
         `;
-        
+
         const updatedSessionResult = await client.query(updateSessionQuery, [
             is_lost || false,
             total_amount,
-            session_id
+            session_id,
         ]);
-        
+
         // Update the parking lot vehicle count
-        const column = session.vehicle_type.toLowerCase() === 'car' ? 'current_car' : 'current_bike';
-        
+        const column = session.vehicle_type.toLowerCase() === "car" ? "current_car" : "current_bike";
+
         const updateLotQuery = `
             UPDATE ParkingLots
             SET ${column} = GREATEST(${column} - 1, 0)
             WHERE lot_id = $1
             RETURNING *
         `;
-        
+
         await client.query(updateLotQuery, [session.lot_id]);
-        
+
         // If lost ticket, create a report
         if (is_lost) {
             const lostTicketQuery = `
@@ -479,26 +464,23 @@ exports.createAndConfirmPayment = async (paymentData) => {
                     penalty_fee
                 ) VALUES ($1, 'UNKNOWN', 'UNKNOWN', $2)
             `;
-            
+
             // Use the penalty fee from the fee config or a default value
             const penaltyFee = session.penalty_fee || 50000;
-            
-            await client.query(lostTicketQuery, [
-                session_id,
-                penaltyFee
-            ]);
+
+            await client.query(lostTicketQuery, [session_id, penaltyFee]);
         }
-        
+
         // Commit the transaction
-        await client.query('COMMIT');
-        
+        await client.query("COMMIT");
+
         return {
             payment: paymentResult.rows[0],
-            session: updatedSessionResult.rows[0]
+            session: updatedSessionResult.rows[0],
         };
     } catch (error) {
         // Rollback in case of error
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw error;
     } finally {
         // Release the client
@@ -506,15 +488,38 @@ exports.createAndConfirmPayment = async (paymentData) => {
     }
 };
 
-exports.getActiveSessionsByLot = async (lotId) => {
+exports.getActiveSessionsByLot = async (lotId, page = 1, limit = 10) => {
+    // Calculate offset
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countQuery = `
+        SELECT COUNT(*) as total
+        FROM ParkingSessions
+        WHERE lot_id = $1 AND time_out IS NULL
+    `;
+    const countResult = await pool.query(countQuery, [lotId]);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Get paginated results
     const query = `
         SELECT * FROM ParkingSessions
         WHERE lot_id = $1 AND time_out IS NULL
         ORDER BY time_in DESC
+        LIMIT $2 OFFSET $3
     `;
 
-    const result = await pool.query(query, [lotId]);
-    return result.rows;
+    const result = await pool.query(query, [lotId, limit, offset]);
+
+    return {
+        sessions: result.rows,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 // Employee reports a lost ticket (standalone, not during checkout)

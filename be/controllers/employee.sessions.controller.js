@@ -257,7 +257,9 @@ exports.confirmCheckout = async (req, res) => {
         let totalAmount = 0;
         let sub_id = null;
         if (session.is_monthly) {
-            totalAmount = 0;
+            if (session.is_lost) {
+                totalAmount = session.penalty_fee;
+            } else totalAmount = 0;
         } else {
             serviceFee = parseFloat(session.service_fee);
             if (hours <= 1) {
@@ -317,15 +319,20 @@ exports.getActiveSessions = async (req, res) => {
             });
         }
 
-        // Get active sessions for this lot
-        const activeSessions = await sessionsRepo.getActiveSessionsByLot(parkingLot.lot_id);
+        // Get pagination parameters
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        // Get active sessions for this lot with pagination
+        const { sessions, pagination } = await sessionsRepo.getActiveSessionsByLot(parkingLot.lot_id, page, limit);
 
         res.status(200).json({
             success: true,
             data: {
                 lot_id: parkingLot.lot_id,
                 lot_name: parkingLot.lot_name,
-                sessions: activeSessions,
+                sessions,
+                pagination,
             },
         });
     } catch (error) {

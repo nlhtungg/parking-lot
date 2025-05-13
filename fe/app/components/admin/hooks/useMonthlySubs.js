@@ -1,109 +1,39 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchAllMonthlySubs, createMonthlySub, deleteMonthlySub } from "../../../api/admin.client";
+import { fetchMonthlySubs, createMonthlySub, deleteMonthlySub } from "@/app/api/admin.client";
+
+const DEFAULT_PAGE_SIZE = 10;
 
 export function useMonthlySubs() {
     const [subs, setSubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [form, setForm] = useState({
         license_plate: "",
-        vehicle_type: "Car",
+        vehicle_type: "",
         start_date: "",
-        months: 1,
+        months: "",
         owner_name: "",
         owner_phone: "",
     });
-
     const [formLoading, setFormLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: DEFAULT_PAGE_SIZE,
+        total: 0,
+        totalPages: 0,
+    });
 
-    // Fetch subs on mount
-    useEffect(() => {
-        fetchAll();
-    }, []);
-
-    // Fetch all monthly subscriptions
-    const fetchAll = async () => {
-        setLoading(true);
-        try {
-            const data = await fetchAllMonthlySubs();
-            setSubs(data);
-        } catch (err) {
-            setError("Failed to fetch monthly subscriptions");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Handle form change
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    // Handle create form submit
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setFormLoading(true);
-        setError("");
-        try {
-            if (
-                !form.license_plate ||
-                !form.vehicle_type ||
-                !form.start_date ||
-                !form.months ||
-                !form.owner_name ||
-                !form.owner_phone
-            ) {
-                setError("All fields required");
-                setFormLoading(false);
-                return;
-            }
-            const result = await createMonthlySub(form);
-            setSubs([...subs, result.newMonthlySub]);
-            setShowForm(false);
-            resetForm();
-        } catch (err) {
-            setError(err.response?.data?.message || err.message || "Failed to add monthly subscription");
-        } finally {
-            setFormLoading(false);
-        }
-    };
-
-    // Reset create form
-    const resetForm = () => {
-        setForm({
-            license_plate: "",
-            vehicle_type: "Car",
-            start_date: "",
-            months: 1,
-            owner_name: "",
-            owner_phone: "",
-        });
-    };
-
-    // Handle delete
-    const handleDelete = async (subId) => {
-        if (!confirm("Are you sure you want to delete this monthly subscription?")) return;
-        try {
-            await deleteMonthlySub(subId);
-            setSubs(subs.filter((sub) => sub.sub_id !== subId));
-        } catch (error) {
-            console.error(`Failed to delete subscription with ID ${subId}:`, error);
-            toast.error("Failed to delete monthly subscription");
-        }
-    };
-
-    // Vehicle type options for dropdown
     const vehicleTypeOptions = [
-        { value: "Car", label: "Car" },
-        { value: "Bike", label: "Bike" },
+        { value: "car", label: "Car" },
+        { value: "bike", label: "Bike" },
     ];
 
-    // Column definitions for the table
     const columns = [
+        { key: "sub_id", label: "ID" },
         { key: "license_plate", label: "License Plate" },
         { key: "vehicle_type", label: "Vehicle Type" },
         { key: "start_date", label: "Start Date" },
@@ -112,8 +42,91 @@ export function useMonthlySubs() {
         { key: "owner_phone", label: "Owner Phone" },
     ];
 
+    useEffect(() => {
+        loadMonthlySubs();
+    }, [pagination.page]);
+
+    const loadMonthlySubs = async () => {
+        try {
+            setLoading(true);
+            const response = await fetchMonthlySubs(pagination.page, pagination.limit);
+            setSubs(response.data.subs);
+            setPagination(response.data.pagination);
+        } catch (err) {
+            setError("Failed to load monthly subscriptions");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setFormLoading(true);
+        setError("");
+
+        try {
+            await createMonthlySub(form);
+            setShowForm(false);
+            loadMonthlySubs(); // Reload the list
+            setForm({
+                license_plate: "",
+                vehicle_type: "",
+                start_date: "",
+                months: "",
+                owner_name: "",
+                owner_phone: "",
+            });
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to create monthly subscription");
+        } finally {
+            setFormLoading(false);
+        }
+    };
+
+    const handleDelete = async (subId) => {
+        if (window.confirm("Are you sure you want to delete this subscription?")) {
+            try {
+                await deleteMonthlySub(subId);
+                setSubs((prevSubs) => prevSubs.filter((sub) => sub.sub_id !== subId));
+            } catch (err) {
+                console.error("Failed to delete subscription:", err);
+                alert("Failed to delete subscription");
+            }
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        setPagination((prev) => ({ ...prev, page: newPage }));
+    };
+
+    // Filter subs based on search query
+    const filteredSubs = subs.filter(
+        (sub) =>
+            sub.license_plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.vehicle_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.owner_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.owner_phone?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return {
-        subs,
+        subs: filteredSubs,
         loading,
         error,
         form,
@@ -121,11 +134,13 @@ export function useMonthlySubs() {
         showForm,
         vehicleTypeOptions,
         columns,
+        pagination,
         setShowForm,
         setError,
         handleChange,
         handleSubmit,
         handleDelete,
-        resetForm,
+        handlePageChange,
+        clearSearch,
     };
 }

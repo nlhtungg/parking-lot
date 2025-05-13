@@ -13,6 +13,13 @@ export function useParkingLots() {
     const [lots, setLots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+    });
 
     const [form, setForm] = useState({
         lot_name: "",
@@ -33,10 +40,26 @@ export function useParkingLots() {
     const [showEditForm, setShowEditForm] = useState(false);
     const [users, setUsers] = useState([]);
 
-    // Fetch parking lots on mount
+    // Fetch parking lots on mount and when page changes
     useEffect(() => {
         fetchAllLots();
-    }, []);
+    }, [pagination.page]);
+
+    // Filter lots when searchQuery or lots changes
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredLots(lots);
+            return;
+        }
+
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = lots.filter(
+            (lot) =>
+                lot.lot_name.toLowerCase().includes(lowercasedQuery) ||
+                (lot.manager_username && lot.manager_username.toLowerCase().includes(lowercasedQuery))
+        );
+        setFilteredLots(results);
+    }, [searchQuery, lots]);
 
     // Fetch users for manager dropdown
     useEffect(() => {
@@ -55,8 +78,9 @@ export function useParkingLots() {
     const fetchAllLots = async () => {
         setLoading(true);
         try {
-            const data = await fetchParkingLots();
-            setLots(data);
+            const response = await fetchParkingLots(pagination.page, pagination.limit);
+            setLots(response.data);
+            setPagination(response.pagination);
         } catch (err) {
             setError("Failed to fetch parking lots");
         } finally {
@@ -149,6 +173,19 @@ export function useParkingLots() {
         }
     };
 
+    // Handle search change
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    // Handle page change
+    const handlePageChange = (newPage) => {
+        setPagination((prev) => ({
+            ...prev,
+            page: newPage,
+        }));
+    };
+
     // Manager options for dropdown
     const managerOptions = [
         { value: "", label: "None" },
@@ -164,7 +201,7 @@ export function useParkingLots() {
     ];
 
     return {
-        lots,
+        lots: filteredLots,
         loading,
         error,
         form,
@@ -174,6 +211,7 @@ export function useParkingLots() {
         showEditForm,
         managerOptions,
         columns,
+        pagination,
         setShowForm,
         setShowEditForm,
         setError,
@@ -184,5 +222,7 @@ export function useParkingLots() {
         handleEdit,
         handleDetail,
         handleDelete,
+        handleSearchChange,
+        handlePageChange,
     };
 }

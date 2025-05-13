@@ -2,10 +2,14 @@ const lotsRepo = require("../repositories/admin.lots.repo");
 
 exports.getAllParkingLots = async (req, res) => {
     try {
-        const parkingLots = await lotsRepo.getAllParkingLots();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const result = await lotsRepo.getAllParkingLots(page, limit);
+
         res.status(200).json({
             success: true,
-            data: parkingLots,
+            data: result.lots,
+            pagination: result.pagination,
         });
     } catch (error) {
         console.error("Get parking lots error:", error);
@@ -162,23 +166,6 @@ exports.deleteParkingLot = async (req, res) => {
                 message: error.message,
             });
         }
-        res.status(500).json({
-            success: false,
-            message: "Internal server error",
-        });
-    }
-};
-
-// Get all lost ticket reports
-exports.getAllLostTicketReports = async (req, res) => {
-    try {
-        const reports = await lotsRepo.getAllLostTicketReports();
-        res.status(200).json({
-            success: true,
-            data: reports,
-        });
-    } catch (error) {
-        console.error("Get lost ticket reports error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",

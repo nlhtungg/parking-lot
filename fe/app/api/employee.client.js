@@ -22,8 +22,8 @@ export async function fetchParkingLots() {
 }
 
 // Get active parking sessions for the employee's lot
-export async function fetchActiveSessions() {
-    const res = await api.get("/employee/parking-sessions");
+export async function fetchActiveSessions(page = 1, limit = 10) {
+    const res = await api.get(`/employee/parking-sessions?page=${page}&limit=${limit}`);
     return res.data.data;
 }
 

@@ -1,6 +1,15 @@
 const { pool } = require("../config/db");
+const { DEFAULT_PAGE_SIZE } = require("../config/pagination");
 
-exports.getAllParkingLots = async () => {
+exports.getAllParkingLots = async (page = 1, limit = DEFAULT_PAGE_SIZE) => {
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM ParkingLots`;
+    const countResult = await pool.query(countQuery);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Get paginated results
     const query = `
         SELECT 
             pl.*,
@@ -8,9 +17,19 @@ exports.getAllParkingLots = async () => {
         FROM ParkingLots pl
         LEFT JOIN Users u ON pl.managed_by = u.user_id
         ORDER BY pl.lot_id
+        LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query);
-    return result.rows;
+    const result = await pool.query(query, [limit, offset]);
+
+    return {
+        lots: result.rows,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 exports.getParkingLotById = async (lotId) => {
@@ -102,15 +121,4 @@ exports.getParkingLotByManager = async (managerId) => {
     `;
     const result = await pool.query(query, [managerId]);
     return result.rows[0];
-};
-
-// Fetch all lost ticket reports
-exports.getAllLostTicketReports = async () => {
-    const query = `
-        SELECT ps.*, ltr.*
-        FROM LostTicketReport ltr
-        JOIN ParkingSessions ps ON ltr.session_id = ps.session_id;
-    `;
-    const result = await pool.query(query);
-    return result.rows;
 };

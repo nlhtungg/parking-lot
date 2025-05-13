@@ -1,7 +1,15 @@
-const { pool } = require('../config/db');
-const bcrypt = require('bcrypt');
+const { pool } = require("../config/db");
+const bcrypt = require("bcrypt");
+const { DEFAULT_PAGE_SIZE } = require("../config/pagination");
 
-exports.getAllUsers = async () => {
+exports.getAllUsers = async (page = 1, limit = DEFAULT_PAGE_SIZE) => {
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM Users`;
+    const countResult = await pool.query(countQuery);
+    const total = parseInt(countResult.rows[0].total);
+
     const query = `
         SELECT 
             user_id,
@@ -12,9 +20,19 @@ exports.getAllUsers = async () => {
             created_at
         FROM Users
         ORDER BY user_id
+        LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query);
-    return result.rows;
+    const result = await pool.query(query, [limit, offset]);
+
+    return {
+        users: result.rows,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 
 exports.getAllFreeEmployees = async () => {
@@ -59,12 +77,7 @@ exports.getUserById = async (userId) => {
 };
 
 exports.createUser = async (userData) => {
-    const {
-        username,
-        password,
-        full_name,
-        role
-    } = userData;
+    const { username, password, full_name, role } = userData;
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -79,23 +92,13 @@ exports.createUser = async (userData) => {
         ) VALUES ($1, $2, $3, $4)
         RETURNING user_id, username, full_name, role, created_at
     `;
-    
-    const result = await pool.query(query, [
-        username,
-        password_hash,
-        full_name,
-        role
-    ]);
+
+    const result = await pool.query(query, [username, password_hash, full_name, role]);
     return result.rows[0];
 };
 
 exports.updateUser = async (userId, userData) => {
-    const {
-        username,
-        password,
-        full_name,
-        role
-    } = userData;
+    const { username, password, full_name, role } = userData;
 
     let queryParams = [username, full_name, role, userId];
     let query;
@@ -126,7 +129,7 @@ exports.updateUser = async (userId, userData) => {
             RETURNING user_id, username, full_name, role, created_at
         `;
     }
-    
+
     const result = await pool.query(query, queryParams);
     return result.rows[0];
 };
@@ -139,9 +142,9 @@ exports.deleteUser = async (userId) => {
         WHERE managed_by = $1
     `;
     const checkResult = await pool.query(checkQuery, [userId]);
-    
+
     if (parseInt(checkResult.rows[0].managing_lots) > 0) {
-        throw new Error('Cannot delete user who is managing parking lots');
+        throw new Error("Cannot delete user who is managing parking lots");
     }
 
     const query = `
@@ -170,4 +173,4 @@ exports.getEmployees = async () => {
     `;
     const result = await pool.query(query);
     return result.rows;
-}; 
+};

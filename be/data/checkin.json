@@ -1,0 +1,22 @@
+[
+    { "license_plate": "ABC-001", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "XYZ-002", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "DEF-003", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "GHI-004", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "JKL-005", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "MNO-006", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "PQR-007", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "STU-008", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "VWX-009", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "YZA-010", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "BCD-011", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "EFG-012", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "HIJ-013", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "KLM-014", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "NOP-015", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "QRS-016", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "TUV-017", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "WXY-018", "vehicle_type": "bike", "lot_id": "2" },
+    { "license_plate": "ZAB-019", "vehicle_type": "car", "lot_id": "2" },
+    { "license_plate": "CDE-020", "vehicle_type": "bike", "lot_id": "2" }
+]

@@ -2,9 +2,11 @@ import api from "./client.config";
 
 // ===================== PARKING LOTS =====================
 // Fetch all parking lots
-export async function fetchParkingLots() {
-    const res = await api.get("/admin/parking-lots");
-    return res.data.data;
+export async function fetchParkingLots(page = 1, limit = 10) {
+    const res = await api.get("/admin/parking-lots", {
+        params: { page, limit },
+    });
+    return res.data;
 }
 
 // Add a new parking lot
@@ -39,9 +41,11 @@ export async function fetchLotParkingSessions(lotId) {
 
 // ===================== USERS =====================
 // Fetch all users
-export async function fetchAllUsers() {
-    const res = await api.get("/admin/users");
-    return res.data.data;
+export async function fetchUsers(page = 1, limit = 10) {
+    const res = await api.get("/admin/users", {
+        params: { page, limit },
+    });
+    return res.data;
 }
 
 // Fetch user by ID
@@ -93,6 +97,15 @@ export async function deleteMonthlySub(id) {
     return res.data.data;
 }
 
+// ===================== PAYMENTS =====================
+// Fetch all payments
+export async function fetchAllPayments(page = 1, limit = 10) {
+    const res = await api.get("/admin/payments", {
+        params: { page, limit },
+    });
+    return res.data;
+}
+
 // ===================== FEES =====================
 // Client: Fetch all fee configurations
 export async function fetchFeeConfigurations() {
@@ -138,13 +151,30 @@ export async function deleteNotification(id) {
 
 // ===================== LOST TICKETS =====================
 // Fetch all lost ticket reports
-export async function fetchAllLostTickets() {
-    const res = await api.get("/admin/lost-tickets");
-    return res.data.data;
+export async function fetchAllLostTickets(page = 1, limit = 10) {
+    const res = await api.get("/admin/lost-tickets", {
+        params: { page, limit },
+    });
+    return res.data;
 }
 
 // Fetch a single lost ticket by session ID
-export async function fetchLostTicketBySessionId(sessionId) {
-    const res = await api.get(`/admin/lost-tickets/${sessionId}`);
+export async function fetchLostTicketBySessionId(reportId) {
+    const res = await api.get(`/admin/lost-tickets/${reportId}`);
     return res.data.data;
+}
+
+// Delete a lost ticket report
+export async function deleteLostTicket(reportId) {
+    const res = await api.delete(`/admin/lost-tickets/${reportId}`);
+    return res.data.data;
+}
+
+// ===================== MONTHLY SUBS =====================
+// Fetch all monthly subscriptions
+export async function fetchMonthlySubs(page = 1, limit = 10) {
+    const res = await api.get("/admin/monthly-subs", {
+        params: { page, limit },
+    });
+    return res.data;
 }
