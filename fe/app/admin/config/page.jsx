@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchFeeConfigurations, updateFeeConfiguration } from "../../api/admin.client";
 import { FaCar, FaMotorcycle, FaCalendarDay, FaCalendarAlt, FaInfoCircle } from "react-icons/fa";
+import Modal from "../../components/common/Modal";
 
 export default function ConfigPage() {
     return <ConfigurationPage />;
@@ -10,9 +11,10 @@ export default function ConfigPage() {
 
 function ConfigurationPage() {
     const [fees, setFees] = useState([]);
-    const [editId, setEditId] = useState(null);
-    const [editValues, setEditValues] = useState({ service_fee: "", penalty_fee: "" });
     const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFee, setSelectedFee] = useState(null);
+    const [editValues, setEditValues] = useState({ service_fee: "", penalty_fee: "" });
 
     useEffect(() => {
         async function loadFees() {
@@ -30,32 +32,43 @@ function ConfigurationPage() {
             }
         }
         loadFees();
-    }, []);
-
-    const handleEdit = (fee) => {
-        setEditId(fee.id);
+    }, []);    const handleEdit = (fee) => {
+        setSelectedFee(fee);
         setEditValues({
             service_fee: fee.service_fee,
             penalty_fee: fee.penalty_fee,
         });
+        setIsModalOpen(true);
     };
 
-    const handleCancel = () => {
-        setEditId(null);
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedFee(null);
         setEditValues({ service_fee: "", penalty_fee: "" });
+    };    const handleChange = (e) => {
+        // Parse the value as an integer to ensure whole numbers
+        const value = parseInt(e.target.value, 10);
+        setEditValues({ 
+            ...editValues, 
+            [e.target.name]: isNaN(value) ? "" : value 
+        });
+    };const formatCurrency = (amount) => {
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "VND",
+            minimumFractionDigits: 0,
+        }).format(amount);
     };
 
-    const handleChange = (e) => {
-        setEditValues({ ...editValues, [e.target.name]: e.target.value });
-    };
-
-    const handleSave = async (fee) => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedFee) return;
+        
         setLoading(true);
         try {
-            const updatedFee = await updateFeeConfiguration({ ...fee, ...editValues });
+            const updatedFee = await updateFeeConfiguration({ ...selectedFee, ...editValues });
             setFees(fees.map((f) => (f.id === updatedFee.id ? updatedFee : f)));
-            setEditId(null);
-            setEditValues({ service_fee: "", penalty_fee: "" });
+            handleCloseModal();
         } catch (error) {
             console.error("Failed to update fee", error);
         } finally {
@@ -81,17 +94,15 @@ function ConfigurationPage() {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Type
+                                        </th>                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Service Fee (VND)
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Service Fee
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Penalty Fee
+                                            Penalty Fee (VND)
                                         </th>
                                         <th className="px-6 py-3"></th>
                                     </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                </thead>                                <tbody className="bg-white divide-y divide-gray-200">
                                     {fees.map((fee) => (
                                         <tr key={fee.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap flex items-center space-x-2 text-sm text-gray-900">
@@ -108,72 +119,27 @@ function ConfigurationPage() {
                                                 <span className="capitalize font-medium text-gray-700">
                                                     {fee.vehicle_type} - {fee.ticket_type}
                                                 </span>
+                                            </td>                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {formatCurrency(fee.service_fee)}
                                             </td>
-                                            {editId === fee.id ? (
-                                                <>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            name="service_fee"
-                                                            value={editValues.service_fee}
-                                                            onChange={handleChange}
-                                                            className="w-24 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 text-sm"
-                                                        />
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            name="penalty_fee"
-                                                            value={editValues.penalty_fee}
-                                                            onChange={handleChange}
-                                                            className="w-24 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 text-sm"
-                                                        />
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
-                                                        <button
-                                                            onClick={handleCancel}
-                                                            className="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 transition text-sm"
-                                                            disabled={loading}
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleSave(fee)}
-                                                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
-                                                            disabled={loading}
-                                                        >
-                                                            {loading ? "Saving..." : "Save"}
-                                                        </button>
-                                                    </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        $ {fee.service_fee}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        $ {fee.penalty_fee}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <button
-                                                            onClick={() => handleEdit(fee)}
-                                                            className="text-blue-600 hover:underline mr-2 text-sm"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                    </td>
-                                                </>
-                                            )}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {formatCurrency(fee.penalty_fee)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => handleEdit(fee)}
+                                                    className="text-blue-600 hover:underline mr-2 text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="lg:col-span-1">
+                </div>                <div className="lg:col-span-1">
                     <div className="bg-white shadow-md rounded-lg overflow-hidden h-full">
                         <div className="bg-blue-600 text-white px-6 py-4 flex items-center">
                             <FaInfoCircle className="mr-2" />
@@ -182,7 +148,7 @@ function ConfigurationPage() {
                         <div className="p-6">
                             <div className="space-y-4">
                                 <p className="text-gray-600">
-                                    Edit fees inline. Click Edit, change values, then Save or Cancel.
+                                    Edit fees by clicking the Edit button. Confirm changes in the popup modal.
                                 </p>
                                 <div className="border-t pt-4">
                                     <h3 className="font-medium text-gray-700 mb-2">Guidelines:</h3>
@@ -197,6 +163,50 @@ function ConfigurationPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Fee Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                title={selectedFee ? `Edit ${selectedFee.vehicle_type} - ${selectedFee.ticket_type} Fee` : 'Edit Fee'}
+                mode="update"
+                loading={loading}
+                onSubmit={handleSubmit}
+                submitText="Confirm"
+            >
+                <div className="space-y-4">
+                    <div>                        <label htmlFor="service_fee" className="block text-sm font-medium text-gray-700">
+                            Service Fee (VND)
+                        </label>
+                        <input
+                            type="number"
+                            id="service_fee"
+                            name="service_fee"
+                            value={editValues.service_fee}
+                            onChange={handleChange}
+                            min="0"
+                            step="1"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                    </div>
+                    <div>                        <label htmlFor="penalty_fee" className="block text-sm font-medium text-gray-700">
+                            Penalty Fee (VND)
+                        </label>
+                        <input
+                            type="number"
+                            id="penalty_fee"
+                            name="penalty_fee"
+                            value={editValues.penalty_fee}
+                            onChange={handleChange}
+                            min="0"
+                            step="1"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
