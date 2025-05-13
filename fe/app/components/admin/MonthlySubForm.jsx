@@ -9,8 +9,9 @@ import FormField from "../common/FormField";
  * @param {Object} props.form - Form data
  * @param {Function} props.onChange - Change handler
  * @param {Array} props.vehicleTypeOptions - Options for the vehicle type dropdown
+ * @param {Array} props.paymentMethodOptions - Options for the payment method dropdown
  */
-export default function MonthlySubForm({ form, onChange, vehicleTypeOptions }) {
+export default function MonthlySubForm({ form, onChange, vehicleTypeOptions, paymentMethodOptions }) {
     return (
         <>
             <FormField
@@ -53,6 +54,16 @@ export default function MonthlySubForm({ form, onChange, vehicleTypeOptions }) {
             <FormField name="owner_name" label="Owner Name" value={form.owner_name} onChange={onChange} required />
 
             <FormField name="owner_phone" label="Owner Phone" value={form.owner_phone} onChange={onChange} required />
+
+            <FormField
+                name="payment_method"
+                label="Payment Method"
+                type="select"
+                value={form.payment_method}
+                onChange={onChange}
+                options={paymentMethodOptions}
+                required
+            />
         </>
     );
 }

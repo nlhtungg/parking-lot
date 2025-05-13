@@ -3,6 +3,11 @@ function getToday() {
   return new Date(Date.now() + offsetMs).toISOString().slice(0, 10);
 }
 
+function getCurrentTime() {
+  const offsetMs = 7 * 60 * 60 * 1000; // UTC+7 for Vietnam timezone
+  return new Date(Date.now() + offsetMs).toISOString().slice(0, 19).replace('T', ' ');
+}
+
 function getDayAfterMonths(start_date, months) {
   const date = new Date(start_date);
   date.setMonth(date.getMonth() + months);
@@ -22,8 +27,9 @@ function calculateHoursDifferenceCeil(startDate, endDate) {
   return Math.ceil(diffHours);
 }
 
-module.exports = { 
+module.exports = {
   getToday,
+  getCurrentTime,
   getDayAfterMonths,
   calculateHoursDifference,
   calculateHoursDifferenceCeil

@@ -17,6 +17,7 @@ export function useMonthlySubs() {
         months: 1,
         owner_name: "",
         owner_phone: "",
+        payment_method: "CASH",
     });
 
     const [formLoading, setFormLoading] = useState(false);
@@ -80,7 +81,8 @@ export function useMonthlySubs() {
                 !form.start_date ||
                 !form.months ||
                 !form.owner_name ||
-                !form.owner_phone
+                !form.owner_phone ||
+                !form.payment_method
             ) {
                 setError("All fields required");
                 setFormLoading(false);
@@ -106,6 +108,7 @@ export function useMonthlySubs() {
             months: 1,
             owner_name: "",
             owner_phone: "",
+            payment_method: "CASH",
         });
     };
 
@@ -125,6 +128,12 @@ export function useMonthlySubs() {
     const vehicleTypeOptions = [
         { value: "car", label: "Car" },
         { value: "bike", label: "Bike" },
+    ];
+    
+    // Payment method options for dropdown
+    const paymentMethodOptions = [
+        { value: "CASH", label: "Cash" },
+        { value: "CARD", label: "Card" },
     ];
 
     // Column definitions for the table
@@ -147,6 +156,7 @@ export function useMonthlySubs() {
         showForm,
         searchQuery,
         vehicleTypeOptions,
+        paymentMethodOptions,
         columns,
         setShowForm,
         setError,
@@ -154,6 +164,5 @@ export function useMonthlySubs() {
         handleSearchChange,
         handleSubmit,
         handleDelete,
-        resetForm,
     };
 }
