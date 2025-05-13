@@ -10,6 +10,7 @@ const adminMonthlySubsController = require("../controllers/admin.monthlysubs.con
 const adminPaymentController = require("../controllers/admin.payment.controller");
 const adminFeeConfigController = require("../controllers/admin.feeConfig.controller");
 const adminNotiController = require("../controllers/admin.noti.controller");
+const adminLostTicketController = require("../controllers/admin.lostticket.controller");
 
 // Middleware for all admin routes
 router.use(authMiddleware.isAuthenticated, authMiddleware.hasRole(["admin"]));
@@ -33,8 +34,11 @@ router.get("/parking-lots/:id/sessions", adminLotsController.getLotParkingSessio
 router.post("/parking-lots", adminLotsController.createParkingLot);
 router.put("/parking-lots/:id", adminLotsController.updateParkingLot);
 router.delete("/parking-lots/:id", adminLotsController.deleteParkingLot);
-router.get("/lost-tickets", adminLotsController.getAllLostTicketReports);
-router.get("/lost-tickets/:id", adminLotsController.getAllLostTicketReports);
+
+// Lost Tickets Management
+router.get("/lost-tickets", adminLostTicketController.getAllLostTicketReports);
+router.get("/lost-tickets/:id", adminLostTicketController.getLostTicketReportById);
+router.delete("/lost-tickets/:id", adminLostTicketController.deleteLostTicketReport);
 
 // Monthly Subs Management
 router.get("/monthly-subs", adminMonthlySubsController.getAllMonthlySubs);

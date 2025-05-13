@@ -168,20 +168,3 @@ exports.deleteParkingLot = async (req, res) => {
         });
     }
 };
-
-// Get all lost ticket reports
-exports.getAllLostTicketReports = async (req, res) => {
-    try {
-        const reports = await lotsRepo.getAllLostTicketReports();
-        res.status(200).json({
-            success: true,
-            data: reports,
-        });
-    } catch (error) {
-        console.error("Get lost ticket reports error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error",
-        });
-    }
-};

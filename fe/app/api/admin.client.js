@@ -151,7 +151,13 @@ export async function fetchAllLostTickets() {
 }
 
 // Fetch a single lost ticket by session ID
-export async function fetchLostTicketBySessionId(sessionId) {
-    const res = await api.get(`/admin/lost-tickets/${sessionId}`);
+export async function fetchLostTicketBySessionId(reportId) {
+    const res = await api.get(`/admin/lost-tickets/${reportId}`);
+    return res.data.data;
+}
+
+// Delete a lost ticket report
+export async function deleteLostTicket(reportId) {
+    const res = await api.delete(`/admin/lost-tickets/${reportId}`);
     return res.data.data;
 }
