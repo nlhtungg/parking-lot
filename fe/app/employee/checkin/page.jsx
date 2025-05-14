@@ -6,6 +6,7 @@ import { useToast } from "../../components/providers/ToastProvider";
 import PageHeader from "../../components/common/PageHeader";
 import { FaCar, FaMotorcycle, FaQrcode, FaPrint, FaRegClock } from "react-icons/fa";
 import FormField from "../../components/common/FormField";
+import PrintableTicket from "../../components/common/PrintableTicket";
 
 export default function CheckInPage() {
     const toast = useToast();
@@ -203,7 +204,7 @@ export default function CheckInPage() {
                         </button>
                     </div>
 
-                    <div className="p-6">
+                    <div className="p-6 no-print">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="flex items-start">
                                 <div className="bg-green-100 p-2 rounded-full mr-3">
@@ -257,6 +258,9 @@ export default function CheckInPage() {
                             </p>
                         </div>
                     </div>
+                    
+                    {/* Hidden printable ticket */}
+                    <PrintableTicket ticket={ticket} formatDateTime={formatDateTime} />
                 </div>
             )}
         </div>
