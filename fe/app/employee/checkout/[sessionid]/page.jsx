@@ -177,7 +177,16 @@ export default function PaymentDetailsPage() {
             setIsLostTicket(true);
             window.location.reload();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to report lost ticket");
+            const message = err.response?.data?.message || "Failed to report lost ticket";
+            if (message === "A lost ticket report already exists for this session") {
+                toast.error("This session already has a lost ticket report");
+                setShowLostTicketForm(false);
+                setIsLostTicket(true);
+            } else if (message === "Session not found") {
+                toast.error("Invalid session ID");
+            } else {
+                toast.error(message);
+            }
         } finally {
             setReportingLost(false);
         }

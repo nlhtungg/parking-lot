@@ -257,10 +257,9 @@ exports.confirmCheckout = async (req, res) => {
         let totalAmount = 0;
         let sub_id = null;
         if (session.is_monthly) {
-            if(session.is_lost) {
+            if (session.is_lost) {
                 totalAmount = session.penalty_fee;
-            }
-            else totalAmount = 0;
+            } else totalAmount = 0;
         } else {
             serviceFee = parseFloat(session.service_fee);
             if (hours <= 1) {
@@ -359,6 +358,18 @@ exports.reportLostTicket = async (req, res) => {
         });
     } catch (error) {
         console.error("Report lost ticket error:", error);
+        if (error.message === "A lost ticket report already exists for this session") {
+            return res.status(409).json({
+                success: false,
+                message: error.message,
+            });
+        }
+        if (error.message === "Session not found") {
+            return res.status(404).json({
+                success: false,
+                message: error.message,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: "Internal server error",

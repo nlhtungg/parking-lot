@@ -289,6 +289,14 @@ exports.reportLostTicket = async ({ session_id, guest_identification, guest_phon
     const sessionResult = await pool.query(sessionQuery, [session_id]);
     const session = sessionResult.rows[0];
     if (!session) throw new Error("Session not found");
+
+    // Check if a lost ticket report already exists for this session
+    const checkExistingQuery = `SELECT * FROM LostTicketReport WHERE session_id = $1`;
+    const existingResult = await pool.query(checkExistingQuery, [session_id]);
+    if (existingResult.rows.length > 0) {
+        throw new Error("A lost ticket report already exists for this session");
+    }
+
     // Assume ticket_type is 'daily' unless you have a field for it
     const ticket_type = session.is_monthly ? "monthly" : "daily";
     const vehicle_type = session.vehicle_type;

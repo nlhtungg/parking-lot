@@ -27,8 +27,15 @@ export default function EmployeeLostTicketPage() {
             } else {
                 setError(json.message || "Failed to report lost ticket");
             }
-        } catch {
-            setError("Failed to report lost ticket");
+        } catch (err) {
+            const message = err.response?.data?.message || "Failed to report lost ticket";
+            if (message === "A lost ticket report already exists for this session") {
+                setError("This session already has a lost ticket report");
+            } else if (message === "Session not found") {
+                setError("Invalid session ID");
+            } else {
+                setError(message);
+            }
         } finally {
             setLoading(false);
         }
