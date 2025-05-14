@@ -38,8 +38,8 @@ function ConfigurationPage() {
         setSelectedFee(fee);
         setEditValues({
             service_fee: fee.service_fee,
-            penalty_fee: fee.penalty_fee,
-        });        setIsModalOpen(true);
+            penalty_fee: fee.penalty_fee,        });
+        setIsModalOpen(true);
     };
     
     const handleCloseModal = () => {
@@ -61,9 +61,10 @@ function ConfigurationPage() {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "VND",
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };    const handleSubmit = async (e) => {
+            minimumFractionDigits: 0,        }).format(amount);
+    };
+    
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedFee) return;
         
@@ -117,13 +118,13 @@ function ConfigurationPage() {
                                                 {fee.vehicle_type === "car" ? (
                                                     <FaCar className="text-blue-500 h-5 w-5" />
                                                 ) : (
-                                                    <FaMotorcycle className="text-blue-500 h-5 w-5" />
-                                                )}
+                                                    <FaMotorcycle className="text-blue-500 h-5 w-5" />                                                )}
                                                 {fee.ticket_type === "daily" ? (
-                                                    <FaCalendarDay className="text-gray-500 h-4 w-4" />
+                                                    <FaCalendarDay key="calendar-icon" className="text-gray-500 h-4 w-4" />
                                                 ) : (
-                                                    <FaCalendarAlt className="text-gray-500 h-4 w-4" />
-                                                )}                                                <span className="capitalize font-medium text-gray-700">
+                                                    <FaCalendarAlt key="calendar-icon" className="text-gray-500 h-4 w-4" />
+                                                )}
+                                                <span className="capitalize font-medium text-gray-700">
                                                     {fee.vehicle_type} - {fee.ticket_type}
                                                 </span>
                                             </td>
