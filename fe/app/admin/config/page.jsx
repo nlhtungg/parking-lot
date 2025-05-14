@@ -32,34 +32,38 @@ function ConfigurationPage() {
             }
         }
         loadFees();
-    }, []);    const handleEdit = (fee) => {
+    }, []);
+    
+    const handleEdit = (fee) => {
         setSelectedFee(fee);
         setEditValues({
             service_fee: fee.service_fee,
-            penalty_fee: fee.penalty_fee,
-        });
+            penalty_fee: fee.penalty_fee,        });
         setIsModalOpen(true);
     };
-
+    
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedFee(null);
         setEditValues({ service_fee: "", penalty_fee: "" });
-    };    const handleChange = (e) => {
+    };
+    
+    const handleChange = (e) => {
         // Parse the value as an integer to ensure whole numbers
-        const value = parseInt(e.target.value, 10);
+        const value = parseInt(e.target.value.replace(/[^0-9]/g, ''), 10);
         setEditValues({ 
             ...editValues, 
             [e.target.name]: isNaN(value) ? "" : value 
         });
-    };const formatCurrency = (amount) => {
+    };
+    
+    const formatCurrency = (amount) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "VND",
-            minimumFractionDigits: 0,
-        }).format(amount);
+            minimumFractionDigits: 0,        }).format(amount);
     };
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedFee) return;
@@ -69,6 +73,9 @@ function ConfigurationPage() {
             const updatedFee = await updateFeeConfiguration({ ...selectedFee, ...editValues });
             setFees(fees.map((f) => (f.id === updatedFee.id ? updatedFee : f)));
             handleCloseModal();
+            
+            // Reload the page after successful update
+            window.location.reload();
         } catch (error) {
             console.error("Failed to update fee", error);
         } finally {
@@ -94,7 +101,8 @@ function ConfigurationPage() {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Type
-                                        </th>                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Service Fee (VND)
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -102,24 +110,25 @@ function ConfigurationPage() {
                                         </th>
                                         <th className="px-6 py-3"></th>
                                     </tr>
-                                </thead>                                <tbody className="bg-white divide-y divide-gray-200">
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
                                     {fees.map((fee) => (
                                         <tr key={fee.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap flex items-center space-x-2 text-sm text-gray-900">
                                                 {fee.vehicle_type === "car" ? (
                                                     <FaCar className="text-blue-500 h-5 w-5" />
                                                 ) : (
-                                                    <FaMotorcycle className="text-blue-500 h-5 w-5" />
-                                                )}
+                                                    <FaMotorcycle className="text-blue-500 h-5 w-5" />                                                )}
                                                 {fee.ticket_type === "daily" ? (
-                                                    <FaCalendarDay className="text-gray-500 h-4 w-4" />
+                                                    <FaCalendarDay key="calendar-icon" className="text-gray-500 h-4 w-4" />
                                                 ) : (
-                                                    <FaCalendarAlt className="text-gray-500 h-4 w-4" />
+                                                    <FaCalendarAlt key="calendar-icon" className="text-gray-500 h-4 w-4" />
                                                 )}
                                                 <span className="capitalize font-medium text-gray-700">
                                                     {fee.vehicle_type} - {fee.ticket_type}
                                                 </span>
-                                            </td>                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {formatCurrency(fee.service_fee)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -139,7 +148,8 @@ function ConfigurationPage() {
                             </table>
                         </div>
                     </div>
-                </div>                <div className="lg:col-span-1">
+                </div>
+                <div className="lg:col-span-1">
                     <div className="bg-white shadow-md rounded-lg overflow-hidden h-full">
                         <div className="bg-blue-600 text-white px-6 py-4 flex items-center">
                             <FaInfoCircle className="mr-2" />
@@ -175,7 +185,8 @@ function ConfigurationPage() {
                 submitText="Confirm"
             >
                 <div className="space-y-4">
-                    <div>                        <label htmlFor="service_fee" className="block text-sm font-medium text-gray-700">
+                    <div>
+                        <label htmlFor="service_fee" className="block text-sm font-medium text-gray-700">
                             Service Fee (VND)
                         </label>
                         <input
@@ -190,7 +201,8 @@ function ConfigurationPage() {
                             required
                         />
                     </div>
-                    <div>                        <label htmlFor="penalty_fee" className="block text-sm font-medium text-gray-700">
+                    <div>
+                        <label htmlFor="penalty_fee" className="block text-sm font-medium text-gray-700">
                             Penalty Fee (VND)
                         </label>
                         <input
