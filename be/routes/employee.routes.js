@@ -34,6 +34,6 @@ router.post("/parking/exit/confirm", sessionsController.confirmCheckout);
 
 // Profile routes
 router.get("/profile", profileController.getMyProfile);
-router.put("/profile", profileController.updateMyProfile);
+router.put("/profile", profileController.changePassword);
 
 module.exports = router;

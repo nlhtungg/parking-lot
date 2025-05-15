@@ -74,11 +74,6 @@ const Sidebar = () => {
             icon: <HiOutlineArrowLeftEndOnRectangle className="mr-3 h-6 w-6" />,
         },
         {
-            name: "Lost Ticket",
-            href: "/employee/lost-tickets",
-            icon: <HiOutlineQuestionMarkCircle className="mr-3 h-6 w-6" />,
-        },
-        {
             name: "Notifications",
             href: "/employee/notifications",
             icon: <HiSpeakerphone className="mr-3 h-6 w-6" />,

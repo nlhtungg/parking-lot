@@ -14,8 +14,14 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            // Redirect to login page on unauthorized access
+        // Check if this is a password validation error from the profile endpoint
+        const isPasswordValidationError = 
+            error.response?.status === 401 && 
+            error.config?.url === '/employee/profile' && 
+            error.config?.method === 'put';
+            
+        if (error.response?.status === 401 && !isPasswordValidationError) {
+            // Redirect to login page on unauthorized access (except for password validation)
             window.location.href = "/login";
         } else if (error.response?.status === 403) {
             // Handle forbidden access based on roles
