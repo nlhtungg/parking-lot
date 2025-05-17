@@ -376,3 +376,17 @@ exports.reportLostTicket = async (req, res) => {
         });
     }
 };
+
+exports.deleteLostTicket = async (req, res) => {
+    const { session_id } = req.params;
+    try {
+        const deleted = await sessionsRepo.deleteLostTicketReportBySessionId(session_id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: "Lost ticket report not found" });
+        }
+        await pool.query(`UPDATE ParkingSessions SET is_lost = false WHERE session_id = $1`, [session_id]);
+        res.status(200).json({ success: true, message: "Lost ticket report deleted" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};

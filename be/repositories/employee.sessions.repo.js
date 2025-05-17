@@ -327,3 +327,9 @@ exports.syncLostTicketStatus = async (session_id) => {
     }
     return hasLost;
 };
+
+exports.deleteLostTicketReportBySessionId = async (session_id) => {
+    const query = `DELETE FROM LostTicketReport WHERE session_id = $1 RETURNING *`;
+    const result = await pool.query(query, [session_id]);
+    return result.rowCount > 0;
+};

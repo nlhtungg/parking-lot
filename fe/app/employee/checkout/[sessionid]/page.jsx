@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { initiateCheckout, confirmCheckout, reportLostTicket } from "@/app/api/employee.client";
+import { initiateCheckout, confirmCheckout, reportLostTicket, deleteLostTicket } from "@/app/api/employee.client";
 import PageHeader from "@/app/components/common/PageHeader";
 import { useToast } from "@/app/components/providers/ToastProvider";
 import {
@@ -192,6 +192,19 @@ export default function PaymentDetailsPage() {
         }
     };
 
+    const handleRemoveLostTicket = async () => {
+        setLoading(true);
+        try {
+            await deleteLostTicket(sessionid);
+            toast.success("Lost ticket state removed");
+            window.location.reload();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to remove lost ticket");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading...</div>;
     if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
     if (!checkout.session) return null;
@@ -211,6 +224,15 @@ export default function PaymentDetailsPage() {
                     <FaExclamationTriangle className="mr-2" />
                     {showLostTicketForm ? "Cancel Lost Ticket Report" : "Report Lost Ticket"}
                 </button>
+                {checkout.session?.is_lost && (
+                    <button
+                        onClick={handleRemoveLostTicket}
+                        className="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        disabled={loading}
+                    >
+                        Remove Lost Ticket
+                    </button>
+                )}
             </div>
             {showLostTicketForm && (
                 <form

@@ -69,3 +69,8 @@ export async function updateMyProfile(profileData) {
     const res = await api.put("/employee/profile", profileData);
     return res.data;
 }
+
+export async function deleteLostTicket(session_id) {
+    const res = await api.delete(`/employee/lost-tickets/${session_id}`);
+    return res.data;
+}
