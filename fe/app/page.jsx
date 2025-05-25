@@ -14,20 +14,7 @@ export default function Home() {
                             <p className="text-xl mb-8">
                                 Efficient, secure, and hassle-free parking solutions for your vehicle
                             </p>
-                            <div className="flex gap-4">
-                                <Link
-                                    href="/book-now"
-                                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-                                >
-                                    Book Now
-                                </Link>
-                                <Link
-                                    href="/learn-more"
-                                    className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
-                                >
-                                    Learn More
-                                </Link>
-                            </div>
+                            
                         </div>
                         <div className="md:w-1/2">
                             <Image
@@ -77,21 +64,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="py-20 mt-8 rounded-xl bg-white shadow-sm">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-                    <p className="text-xl text-gray-600 mb-8">
-                        Join thousands of satisfied customers who trust our parking solutions
-                    </p>
-                    <Link
-                        href="/register"
-                        className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
-                    >
-                        Create Free Account
-                    </Link>
-                </div>
-            </section>
         </div>
     );
 }

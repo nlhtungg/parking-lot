@@ -74,13 +74,6 @@ export default function EmployeePage() {
                             <p className="text-sm">Approve vehicle out of parking lot and charge.</p>
                         </div>
                         <div
-                            className="bg-purple-100 text-purple-800 p-4 rounded-lg shadow-md hover:bg-purple-200 transition cursor-pointer"
-                            onClick={() => handleNavigation("/employee/payments")}
-                        >
-                            <h2 className="text-xl font-semibold">Payments</h2>
-                            <p className="text-sm">Track and manage all payment transactions.</p>
-                        </div>
-                        <div
                             className="bg-indigo-100 text-indigo-800 p-4 rounded-lg shadow-md hover:bg-indigo-200 transition cursor-pointer"
                             onClick={() => handleNavigation("/employee/profile")}
                         >
