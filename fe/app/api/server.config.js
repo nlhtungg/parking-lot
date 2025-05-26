@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 export async function serverApiFetch(path, options = {}) {
     const cookieStore = await cookies();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://parking-lot-llf1.onrender.com/api";
     const headers = {
         ...(options.headers || {}),
         "Content-Type": "application/json",
